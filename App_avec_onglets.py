@@ -22,7 +22,6 @@ def reset_app():
     st.rerun()
 
 # --- EN-TÊTE ---
-# Sans bouton maison, juste le titre
 st.title("📈 Analyseur d'Actions Boursières")
 
 # ---------------------------------------------------------
@@ -346,17 +345,19 @@ else:
     with tab_analyse:
         st.header("🔍 Démarrez l'Analyse")
         
+        # --- BARRE DE RECHERCHE CORRIGÉE ---
         with st.container(border=True):
             with st.form(key='search_form', clear_on_submit=False):
-                # ALIGNEMENT PARFAIT: vertical_alignment="bottom"
+                # Utilisation de vertical_alignment="bottom" pour aligner :
+                # Champ texte (sans label) -- Radio (sans label) -- Bouton
                 c1, c2, c3 = st.columns([3, 1.5, 1.5], vertical_alignment="bottom", gap="medium")
                 
                 with c1:
-                    # label_visibility="collapsed" supprime l'espace du titre
+                    # label_visibility="collapsed" supprime le titre au-dessus
                     ticker_input = st.text_input("Ticker", placeholder="Ex: AAPL, NVIDIA, Total...", label_visibility="collapsed")
                     
                 with c2:
-                    # label_visibility="collapsed" supprime l'espace du titre
+                    # label_visibility="collapsed" pour supprimer "Horizon..."
                     horizon = st.radio("Horizon", ["Court terme", "Long terme"], index=1, horizontal=True, label_visibility="collapsed")
                     
                 with c3:
@@ -416,6 +417,11 @@ st.markdown("""
         line-height: 1.2 !important;
         border-radius: 15px !important;
         border: 1px solid rgba(128, 128, 128, 0.2) !important;
+    }
+    
+    /* CSS POUR ALIGNER LES RADIOS AVEC L'INPUT ET LE BOUTON */
+    div[data-testid="stRadio"] > div {
+        margin-bottom: 12px; /* Pousse légèrement les radios vers le bas pour centrer */
     }
     
     h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; }
