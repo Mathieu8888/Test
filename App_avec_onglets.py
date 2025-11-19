@@ -238,16 +238,22 @@ with tab_analyse:
                     
                     st.markdown("---")
                     
-                    # Graphique Prix (CORRIGÉ)
-                    st.markdown("### 📈 Évolution Prix")
-                    per_opts = [("1S","5d"),("1M","1mo"),("3M","3mo"),("6M","6mo"),("1A","1y"),("5A","5y")]
+                    # --- MODIFICATIONS ICI : BOUTONS PETITS À DROITE + MAX ---
+                    col_title, col_btns = st.columns([3, 4])
+                    with col_title:
+                        st.markdown("### 📈 Évolution Prix")
+                    
+                    # Liste mise à jour avec MAX
+                    per_opts = [("1S","5d"),("1M","1mo"),("3M","3mo"),("6M","6mo"),("1A","1y"),("5A","5y"), ("MAX", "max")]
                     if 'sel_per' not in st.session_state: st.session_state.sel_per = "1A"
                     
-                    cols = st.columns(len(per_opts))
-                    for i, (l, c) in enumerate(per_opts):
-                        if cols[i].button(l, key=f"p_{l}", type="primary" if st.session_state.sel_per==l else "secondary", use_container_width=True):
-                            st.session_state.sel_per = l
-                            st.rerun()
+                    with col_btns:
+                        # Sous-colonnes serrées pour les boutons
+                        cols = st.columns(len(per_opts))
+                        for i, (l, c) in enumerate(per_opts):
+                            if cols[i].button(l, key=f"p_{l}", type="primary" if st.session_state.sel_per==l else "secondary", use_container_width=True):
+                                st.session_state.sel_per = l
+                                st.rerun()
                             
                     sel_code = dict(per_opts)[st.session_state.sel_per]
                     hist = final.stock.history(period=sel_code)
@@ -255,7 +261,7 @@ with tab_analyse:
                     if not hist.empty:
                         perf = ((hist['Close'][-1] - hist['Close'][0])/hist['Close'][0])*100
                         
-                        # CORRECTION ICI : Définition explicite des couleurs
+                        # Gestion couleur explicite
                         if perf > 0:
                             line_col = '#00CC00'
                             fill_col = 'rgba(0, 204, 0, 0.1)'
@@ -339,6 +345,17 @@ st.markdown("""
     .row-text { font-size: 15px; line-height: 1.6; vertical-align: middle; }
     div[data-testid="column"] { padding-top: 10px !important; padding-bottom: 10px !important; }
     .row-divider { margin-top: 5px !important; margin-bottom: 5px !important; border-top: 1px solid #f0f0f0; }
-    div[data-testid="column"] button[kind="secondary"] { padding: 2px 5px !important; font-size: 0.8em !important; }
+    
+    /* CSS Ajusté pour petits boutons */
+    div[data-testid="column"] button[kind="secondary"] { 
+        padding: 2px 5px !important; 
+        font-size: 0.8em !important; 
+        min-height: 1em !important;
+    }
+    div[data-testid="column"] button[kind="primary"] { 
+        padding: 2px 5px !important; 
+        font-size: 0.8em !important; 
+        min-height: 1em !important;
+    }
 </style>
 """, unsafe_allow_html=True)
