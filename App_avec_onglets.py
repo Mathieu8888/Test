@@ -108,14 +108,124 @@ def get_valuation_analysis(info):
     return signals, verdict
 
 def get_calculation_details(scorer, indicator_name):
+    """Retourne les détails COMPLETS pour chaque indicateur"""
     info = scorer.info
-    def fmt(v): return f"{float(v):,.2f}" if v else "N/A"
+    
+    def fmt_pct(v): 
+        try: return f"{float(v)*100:.2f}%" if v is not None else "N/A"
+        except: return "N/A"
+    
+    def fmt_num(v):
+        try: return f"{float(v):,.2f}" if v is not None else "N/A"
+        except: return "N/A"
+
     details = {
-        "Momentum 6M": f"Prix: ${info.get('currentPrice','N/A')} | Haut 52s: ${info.get('fiftyTwoWeekHigh','N/A')}",
-        "RSI": "RSI (14j) : <30 (Achat), >70 (Vente)",
-        "P/E Ratio": f"Ratio: {fmt(info.get('trailingPE') or info.get('forwardPE'))}",
+        "Momentum 6M": f"""
+**Momentum 6 Mois**
+- Prix actuel : ${info.get('currentPrice', 'N/A')}
+- Plus haut 52s : ${info.get('fiftyTwoWeekHigh', 'N/A')}
+- Indique la tendance moyen terme.
+""",
+        "Momentum 3M": f"""
+**Momentum 3 Mois**
+- Performance récente.
+- Prix actuel : ${info.get('currentPrice', 'N/A')}
+""",
+        "RSI": """
+**RSI (14 jours)**
+- < 30 : Survente (Potentiel achat)
+- > 70 : Surachat (Potentiel vente)
+- 40-60 : Neutre
+""",
+        "Volume": f"""
+**Volume**
+- Volume moyen : {fmt_num(info.get('averageVolume'))}
+- Mesure l'intérêt des investisseurs.
+""",
+        "P/E Ratio": f"""
+**Price to Earnings (PER)**
+- Ratio actuel : {fmt_num(info.get('trailingPE') or info.get('forwardPE'))}
+- < 15 : Souvent sous-évalué
+- > 25 : Souvent surévalué (ou forte croissance)
+""",
+        "PEG Ratio": f"""
+**PEG Ratio**
+- Ratio actuel : {fmt_num(info.get('pegRatio'))}
+- < 1 : Sous-évalué par rapport à la croissance
+- 1-2 : Valorisation correcte
+""",
+        "Croissance CA": f"""
+**Croissance Chiffre d'Affaires**
+- Taux : {fmt_pct(info.get('revenueGrowth'))}
+- Mesure le dynamisme de l'activité.
+""",
+        "Marges": f"""
+**Marge Nette**
+- Taux : {fmt_pct(info.get('profitMargins'))}
+- % de CA transformé en bénéfice.
+""",
+        "Marge Opé": f"""
+**Marge Opérationnelle**
+- Taux : {fmt_pct(info.get('operatingMargins'))}
+- Rentabilité de l'activité principale.
+""",
+        "ROE": f"""
+**Return on Equity (ROE)**
+- Taux : {fmt_pct(info.get('returnOnEquity'))}
+- Rentabilité des capitaux propres.
+- > 15% est généralement excellent.
+""",
+        "ROA": f"""
+**Return on Assets (ROA)**
+- Taux : {fmt_pct(info.get('returnOnAssets'))}
+- Efficacité d'utilisation des actifs.
+""",
+        "Dette/Capitaux": f"""
+**Dette / Capitaux Propres**
+- Ratio : {fmt_num(info.get('debtToEquity'))}
+- < 100 (ou 1) est préférable.
+- Mesure le levier financier.
+""",
+        "Dette/Actifs": f"""
+**Dette / Actifs**
+- Part des actifs financée par la dette.
+""",
+        "Free Cash Flow": f"""
+**Free Cash Flow**
+- Montant : ${fmt_num(info.get('freeCashflow'))}
+- Argent réel généré après investissements.
+- Crucial pour dividendes et rachats.
+""",
+        "Beta": f"""
+**Beta (Volatilité)**
+- Beta : {fmt_num(info.get('beta'))}
+- < 1 : Moins volatil que le marché (Défensif)
+- > 1 : Plus volatil que le marché (Offensif)
+""",
+        "Liquidité": f"""
+**Current Ratio**
+- Ratio : {fmt_num(info.get('currentRatio'))}
+- Capacité à payer les dettes court terme.
+- > 1.5 est un bon signe de santé.
+""",
+        "Dividende": f"""
+**Rendement du Dividende**
+- Yield : {fmt_pct(info.get('dividendYield'))}
+- Revenu annuel versé aux actionnaires.
+""",
+        "Croiss. Dividende": """
+**Croissance du Dividende**
+- Historique d'augmentation des dividendes sur 5 ans.
+""",
+        "Price to Book": f"""
+**Price to Book (P/B)**
+- Ratio : {fmt_num(info.get('priceToBook'))}
+- < 1 : Potentiellement sous-évalué (sous la valeur comptable).
+"""
     }
-    return details.get(indicator_name, "Détails non disponibles.")
+    
+    # Renvoie la description si elle existe, sinon un message générique
+    return details.get(indicator_name, "Détails de calcul spécifiques non disponibles pour cet indicateur.")
 
 # --- PAGE D'ANALYSE ---
 def show_analysis_page(company_ticker, horizon_code):
@@ -257,9 +367,10 @@ def show_analysis_page(company_ticker, horizon_code):
             st.error(f"Erreur: {e}")
 
 # ---------------------------------------------------------
-# FONCTION D'AFFICHAGE LIGNE AVEC BOUTON CLIQUABLE
+# FONCTION D'AFFICHAGE LIGNE (Classement)
 # ---------------------------------------------------------
 def display_row(rank, ticker, name, price, mcap, p1d, p7d, p30d, p1y, is_header=False):
+    # Ajustement des colonnes pour que ce soit aéré mais aligné
     cols = st.columns([0.4, 0.8, 2, 1, 1.2, 1, 1, 1, 1])
     
     if is_header:
@@ -321,7 +432,6 @@ else:
     with tab_analyse:
         st.header("🔍 Démarrez l'Analyse")
         
-        # --- FORMULAIRE DE RECHERCHE POUR UTILISER "ENTRÉE" ---
         with st.form(key='search_form'):
             col_input, col_radio, col_btn = st.columns([2, 2, 1])
             with col_input:
@@ -374,14 +484,14 @@ else:
 st.markdown("""
 <style>
     .block-container { padding-top: 2rem; padding-bottom: 2rem; }
-    .row-text { font-size: 15px; line-height: 1.4; vertical-align: middle; margin: 0; padding: 0; }
+    .row-text { font-size: 15px; line-height: 1.6; vertical-align: middle; margin: 0; padding: 0; }
     
-    /* PADDING COLONNES TRES SERRÉ POUR LE CLASSEMENT */
-    div[data-testid="column"] { padding: 0px 0px !important; margin: 0px !important;}
+    /* Remettre un peu de padding pour aérer le classement */
+    div[data-testid="column"] { padding: 0px 5px !important; margin: 0px !important;}
     
-    .row-divider { margin-top: 2px !important; margin-bottom: 2px !important; border-top: 1px solid #f0f0f0; }
+    /* Marge plus grande pour les lignes */
+    .row-divider { margin-top: 8px !important; margin-bottom: 8px !important; border-top: 1px solid #f0f0f0; }
     
-    /* BOUTONS */
     div[data-testid="stColumn"] button { 
         padding: 0px 8px !important;
         font-size: 0.75em !important; 
