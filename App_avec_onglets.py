@@ -21,7 +21,8 @@ def reset_app():
     st.session_state.origin = None
     st.rerun()
 
-# --- EN-TÊTE (Sans le bouton maison) ---
+# --- EN-TÊTE ---
+# Sans bouton maison, juste le titre
 st.title("📈 Analyseur d'Actions Boursières")
 
 # ---------------------------------------------------------
@@ -196,7 +197,6 @@ def show_analysis_page(company_ticker, horizon_code):
             st.markdown("### 📊 Indicateurs Détaillés")
             for name, val in sorted(final.scores.items(), key=lambda x: x[1], reverse=True):
                 e = "🟢" if val >= 7 else "🟡" if val >= 4 else "🔴"
-                
                 if val >= 7: color = "#00CC00"
                 elif val >= 4: color = "#FFD700"
                 else: color = "#FF4B4B"
@@ -282,7 +282,7 @@ def show_analysis_page(company_ticker, horizon_code):
             st.error(f"Erreur: {e}")
 
 # ---------------------------------------------------------
-# FONCTION D'AFFICHAGE LIGNE (Avec Suffixe pour Éviter les Doublons)
+# FONCTION D'AFFICHAGE LIGNE
 # ---------------------------------------------------------
 def display_row(rank, ticker, name, price, mcap, p1d, p7d, p30d, p1y, is_header=False, list_suffix=""):
     cols = st.columns([0.4, 0.8, 2, 1, 1.2, 1, 1, 1, 1])
@@ -346,17 +346,17 @@ else:
     with tab_analyse:
         st.header("🔍 Démarrez l'Analyse")
         
-        # --- RECHERCHE DASHBOARD PRO ---
         with st.container(border=True):
             with st.form(key='search_form', clear_on_submit=False):
-                # vertical_alignment="bottom" pour aligner le bouton rouge avec le champ texte
+                # ALIGNEMENT PARFAIT: vertical_alignment="bottom"
                 c1, c2, c3 = st.columns([3, 1.5, 1.5], vertical_alignment="bottom", gap="medium")
                 
                 with c1:
-                    ticker_input = st.text_input("Ticker ou Nom de l'entreprise", placeholder="Ex: AAPL, NVIDIA, Total...", help="Entrez le symbole boursier")
+                    # label_visibility="collapsed" supprime l'espace du titre
+                    ticker_input = st.text_input("Ticker", placeholder="Ex: AAPL, NVIDIA, Total...", label_visibility="collapsed")
                     
                 with c2:
-                    # Label masqué par label_visibility="collapsed"
+                    # label_visibility="collapsed" supprime l'espace du titre
                     horizon = st.radio("Horizon", ["Court terme", "Long terme"], index=1, horizontal=True, label_visibility="collapsed")
                     
                 with c3:
