@@ -343,29 +343,26 @@ else:
     ])
 
     with tab_analyse:
-        # Centrage du titre de recherche avec style
-        st.markdown("<h2 style='text-align: center;'>🔍 Démarrez l'Analyse</h2>", unsafe_allow_html=True)
         st.write("") # Espace
-
-        # 1. Centrage du bloc avec des colonnes
+        st.markdown("<h2 style='text-align: center; margin-bottom: 20px;'>🔍 Démarrez l'Analyse</h2>", unsafe_allow_html=True)
+        
+        # Centrage horizontal
         _, c_main, _ = st.columns([1, 6, 1])
         
         with c_main:
             with st.form(key='search_form', clear_on_submit=False):
+                # Mise en page "Amazon Style" : Horizon | Ticker | Bouton
+                c_nav_1, c_nav_2, c_nav_3 = st.columns([1.5, 5, 1], vertical_alignment="bottom")
                 
-                # LIGNE 1: Input Texte (Label visible)
-                ticker_input = st.text_input("Ticker de l'action", placeholder="Ex: AAPL, NVIDIA, Total...", help="Entrez le symbole")
+                with c_nav_1:
+                    # Selectbox agit comme la catégorie Amazon
+                    horizon = st.selectbox("Horizon", ["Long terme", "Court terme"], label_visibility="collapsed")
                 
-                st.write("") 
+                with c_nav_2:
+                    ticker_input = st.text_input("Ticker", placeholder="Rechercher action (ex: AAPL)...", label_visibility="collapsed")
                 
-                # LIGNE 2: Horizon
-                st.write("**Horizon d'investissement**")
-                horizon = st.radio("Horizon d'investissement", ["Court terme", "Long terme"], index=1, horizontal=True, label_visibility="collapsed")
-                
-                st.write("")
-                
-                # LIGNE 3: Bouton Pleine Largeur
-                submit_search = st.form_submit_button("🚀 Lancer l'analyse", type="primary", use_container_width=True)
+                with c_nav_3:
+                    submit_search = st.form_submit_button("🔍", type="primary", use_container_width=True)
                 
                 if submit_search and ticker_input:
                     st.session_state.selected_stock = ticker_input.strip().upper()
@@ -414,15 +411,7 @@ st.markdown("""
     div[data-testid="column"] { padding: 0px 5px !important; margin: 0px !important;}
     .row-divider { margin-top: 8px !important; margin-bottom: 8px !important; border-top: 1px solid #f0f0f0; }
     
-    /* Bouton Analyse GRAS et GRAND */
-    div[data-testid="stFormSubmitButton"] > button { 
-        height: 45px !important;
-        width: 100% !important;
-        font-size: 18px !important;
-        font-weight: bold !important;
-    }
-
-    /* Autres boutons standards */
+    /* Style des boutons standards */
     div[data-testid="stColumn"] button:not([kind="primary"]) { 
         padding: 0px 8px !important;
         font-size: 0.75em !important; 
