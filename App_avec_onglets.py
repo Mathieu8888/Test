@@ -13,9 +13,8 @@ st.set_page_config(page_title="Analyseur Actions Boursières", page_icon="📈",
 st.title("📈 Analyseur d'Actions Boursières")
 
 # ---------------------------------------------------------
-# DONNÉES POUR LES CLASSEMENTS (TABS 2, 3, 4)
+# DONNÉES POUR LES CLASSEMENTS
 # ---------------------------------------------------------
-# Liste nécessaire uniquement pour générer les tableaux de classement
 MAJOR_STOCKS = [
     "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA", "NFLX", "AMD", "INTC",
     "ADBE", "CRM", "ORCL", "CSCO", "AVGO", "QCOM", "TXN", "INTU", "NOW", "SNOW",
@@ -71,7 +70,7 @@ def format_percentage(value):
     else: return f'<span style="color: #888888;">• {value:.2f}%</span>'
 
 # ---------------------------------------------------------
-# FONCTIONS D'ANALYSE (TAB 1)
+# FONCTIONS D'ANALYSE
 # ---------------------------------------------------------
 def get_valuation_analysis(info):
     pe = info.get('trailingPE') or info.get('forwardPE')
@@ -123,16 +122,14 @@ tab_analyse, tab_top100, tab_perf_pos, tab_perf_neg = st.tabs([
 ])
 
 # ============================
-# TAB 1: ANALYSE (SIMPLIFIÉ)
+# TAB 1: ANALYSE
 # ============================
 with tab_analyse:
     st.header("🔍 Démarrez l'Analyse")
 
-    # --- BARRE DE RECHERCHE SIMPLIFIÉE ---
     col_input, col_radio, col_btn = st.columns([2, 2, 1])
     
     with col_input:
-        # Champ texte simple, l'utilisateur doit entrer le Ticker
         ticker_input = st.text_input("Entrez le Ticker de l'action", placeholder="ex: AAPL, TSLA, TTE...", label_visibility="collapsed")
         company = ticker_input.strip().upper() if ticker_input else ""
     
@@ -179,9 +176,8 @@ with tab_analyse:
     elif analyze or company:
         with st.spinner(f"Analyse de {company}..."):
             try:
-                # Appel direct sans "smart_search"
                 scorer = StockScorer(company, h_code)
-                if not scorer.fetch_data(): # Vérifie si le ticker existe via yfinance
+                if not scorer.fetch_data():
                     st.error(f"❌ Ticker '{company}' introuvable ou données invalides.")
                 else:
                     final = scorer
@@ -242,7 +238,7 @@ with tab_analyse:
                     
                     st.markdown("---")
                     
-                    # Graphique Prix
+                    # Graphique Prix (CORRIGÉ)
                     st.markdown("### 📈 Évolution Prix")
                     per_opts = [("1S","5d"),("1M","1mo"),("3M","3mo"),("6M","6mo"),("1A","1y"),("5A","5y")]
                     if 'sel_per' not in st.session_state: st.session_state.sel_per = "1A"
@@ -255,11 +251,27 @@ with tab_analyse:
                             
                     sel_code = dict(per_opts)[st.session_state.sel_per]
                     hist = final.stock.history(period=sel_code)
+                    
                     if not hist.empty:
                         perf = ((hist['Close'][-1] - hist['Close'][0])/hist['Close'][0])*100
-                        col = '#00CC00' if perf>0 else '#FF4B4B'
+                        
+                        # CORRECTION ICI : Définition explicite des couleurs
+                        if perf > 0:
+                            line_col = '#00CC00'
+                            fill_col = 'rgba(0, 204, 0, 0.1)'
+                        else:
+                            line_col = '#FF4B4B'
+                            fill_col = 'rgba(255, 75, 75, 0.1)'
+                            
                         fig = go.Figure()
-                        fig.add_trace(go.Scatter(x=hist.index, y=hist['Close'], mode='lines', line=dict(color=col, width=2), fill='tozeroy', fillcolor=col.replace('#','rgba(').replace(')',',0.1)'))) # Hacky color but works
+                        fig.add_trace(go.Scatter(
+                            x=hist.index, 
+                            y=hist['Close'], 
+                            mode='lines', 
+                            line=dict(color=line_col, width=2), 
+                            fill='tozeroy', 
+                            fillcolor=fill_col
+                        ))
                         fig.update_layout(height=400, margin=dict(l=0,r=0,t=10,b=0), showlegend=False)
                         st.plotly_chart(fig, use_container_width=True)
 
