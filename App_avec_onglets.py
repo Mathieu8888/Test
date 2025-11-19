@@ -16,24 +16,25 @@ if 'selected_stock' not in st.session_state:
     st.session_state.selected_stock = None
 if 'selected_horizon' not in st.session_state:
     st.session_state.selected_horizon = 'long'
+if 'origin' not in st.session_state:
+    st.session_state.origin = None  # 'search' ou 'ranking'
 
 # --- FONCTION DE RÉINITIALISATION ---
 def reset_app():
     st.session_state.selected_stock = None
+    st.session_state.origin = None
     st.rerun()
 
-# --- TITRE CLIQUABLE (RETOUR ACCUEIL) ---
-# On utilise un bouton invisible sur le titre ou simplement le callback reset
-st.markdown("""
-    <style>
-    .title-btn { background: none!important; border: none; padding: 0!important; color: inherit; text-decoration: none; cursor: pointer; }
-    </style>
-""", unsafe_allow_html=True)
-
-col_logo, col_void = st.columns([3, 7])
-with col_logo:
-    if st.button("📈 Analyseur d'Actions Boursières", type="secondary", use_container_width=True):
-        reset_app()
+# --- EN-TÊTE ---
+# Colonnes pour mettre le bouton Accueil à droite du titre
+col_title, col_home = st.columns([9, 1])
+with col_title:
+    st.title("📈 Analyseur d'Actions Boursières")
+with col_home:
+    # Le bouton accueil n'apparait que si on est dans une analyse
+    if st.session_state.selected_stock:
+        if st.button("🏠", help="Retour à l'accueil", use_container_width=True):
+            reset_app()
 
 # ---------------------------------------------------------
 # DONNÉES ET FONCTIONS UTILITAIRES
@@ -54,12 +55,9 @@ def get_stock_data(ticker):
         stock = yf.Ticker(ticker)
         info = stock.info
         hist = stock.history(period="3mo")
-        
         if hist.empty or not info: return None
-        
         current_price = info.get('currentPrice') or info.get('regularMarketPrice') or (hist['Close'][-1] if not hist.empty else None)
         market_cap = info.get('marketCap', 0)
-        
         if not current_price or current_price <= 0: return None
         
         perf_1d = ((hist['Close'][-1] - hist['Close'][-2]) / hist['Close'][-2] * 100) if len(hist) >= 2 else 0
@@ -68,14 +66,9 @@ def get_stock_data(ticker):
         perf_1y = info.get('52WeekChange', 0) * 100
         
         return {
-            'ticker': ticker,
-            'name': info.get('longName', ticker),
-            'price': current_price,
-            'market_cap': market_cap,
-            'perf_1d': perf_1d,
-            'perf_7d': perf_7d,
-            'perf_30d': perf_30d,
-            'perf_1y': perf_1y
+            'ticker': ticker, 'name': info.get('longName', ticker), 'price': current_price,
+            'market_cap': market_cap, 'perf_1d': perf_1d, 'perf_7d': perf_7d,
+            'perf_30d': perf_30d, 'perf_1y': perf_1y
         }
     except: return None
 
@@ -92,14 +85,13 @@ def format_percentage(value):
     else: return f'<span style="color: #888888;">• {value:.2f}%</span>'
 
 # ---------------------------------------------------------
-# LOGIQUE D'ANALYSE (EXTRAITE POUR ÊTRE RÉUTILISABLE)
+# LOGIQUE D'ANALYSE
 # ---------------------------------------------------------
 def get_valuation_analysis(info):
     pe = info.get('trailingPE') or info.get('forwardPE')
     peg = info.get('pegRatio')
     pb = info.get('priceToBook')
     signals = []
-    
     if pe and pe > 0:
         if pe < 15: signals.append(("P/E Ratio", pe, "🟢 Sous-évalué", f"P/E de {pe:.2f} (< 15)"))
         elif pe < 25: signals.append(("P/E Ratio", pe, "🟡 Équilibré", f"P/E de {pe:.2f} (15-25)"))
@@ -131,11 +123,15 @@ def get_calculation_details(scorer, indicator_name):
     }
     return details.get(indicator_name, "Détails non disponibles.")
 
-# --- FONCTION D'AFFICHAGE DE LA PAGE D'ANALYSE ---
+# --- PAGE D'ANALYSE ---
 def show_analysis_page(company_ticker, horizon_code):
-    # Bouton retour
-    if st.button("← Retour aux classements", type="secondary"):
-        reset_app()
+    # Bouton de retour contextuel
+    if st.session_state.origin == 'ranking':
+        if st.button("← Retour aux classements", type="secondary"):
+            reset_app()
+    elif st.session_state.origin == 'search':
+        if st.button("🔍 Nouvelle recherche", type="secondary"):
+            reset_app()
 
     with st.spinner(f"Analyse détaillée de {company_ticker}..."):
         try:
@@ -191,7 +187,6 @@ def show_analysis_page(company_ticker, horizon_code):
 
             st.markdown("---")
             
-            # Barres
             st.markdown("### 📊 Indicateurs Détaillés")
             for name, val in sorted(final.scores.items(), key=lambda x: x[1], reverse=True):
                 e = "🟢" if val >= 7 else "🟡" if val >= 4 else "🔴"
@@ -202,7 +197,6 @@ def show_analysis_page(company_ticker, horizon_code):
             
             st.markdown("---")
 
-            # Infos Complémentaires
             st.markdown("### 📊 Informations Complémentaires")
             col1_info, col2_info = st.columns(2)
             with col1_info:
@@ -211,7 +205,6 @@ def show_analysis_page(company_ticker, horizon_code):
                 st.write(f"- **Volume moyen** : {info.get('averageVolume', 0):,.0f}")
                 st.write(f"- **Plus haut 52 sem** : ${info.get('fiftyTwoWeekHigh', 'N/A')}")
                 st.write(f"- **Plus bas 52 sem** : ${info.get('fiftyTwoWeekLow', 'N/A')}")
-                
                 high_52 = info.get('fiftyTwoWeekHigh')
                 low_52 = info.get('fiftyTwoWeekLow')
                 current_price = info.get('currentPrice')
@@ -231,7 +224,6 @@ def show_analysis_page(company_ticker, horizon_code):
             
             st.markdown("---")
             
-            # Graphique Prix
             col_title, col_btns_spacer, col_btns = st.columns([1.5, 3.5, 3])
             with col_title:
                 st.markdown("### 📈 Évolution Prix")
@@ -257,7 +249,6 @@ def show_analysis_page(company_ticker, horizon_code):
                 y_range = [y_min - margin, y_max + margin]
 
                 perf = ((hist['Close'][-1] - hist['Close'][0])/hist['Close'][0])*100
-                
                 if perf > 0:
                     line_col = '#00CC00'
                     fill_col = 'rgba(0, 204, 0, 0.1)'
@@ -266,21 +257,8 @@ def show_analysis_page(company_ticker, horizon_code):
                     fill_col = 'rgba(255, 75, 75, 0.1)'
                     
                 fig = go.Figure()
-                fig.add_trace(go.Scatter(
-                    x=hist.index, 
-                    y=hist['Close'], 
-                    mode='lines', 
-                    line=dict(color=line_col, width=2), 
-                    fill='tozeroy', 
-                    fillcolor=fill_col
-                ))
-                
-                fig.update_layout(
-                    height=400, 
-                    margin=dict(l=0,r=0,t=10,b=0), 
-                    showlegend=False,
-                    yaxis=dict(range=y_range)
-                )
+                fig.add_trace(go.Scatter(x=hist.index, y=hist['Close'], mode='lines', line=dict(color=line_col, width=2), fill='tozeroy', fillcolor=fill_col))
+                fig.update_layout(height=400, margin=dict(l=0,r=0,t=10,b=0), showlegend=False, yaxis=dict(range=y_range))
                 st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
         except Exception as e:
@@ -290,7 +268,6 @@ def show_analysis_page(company_ticker, horizon_code):
 # FONCTION D'AFFICHAGE LIGNE AVEC BOUTON CLIQUABLE
 # ---------------------------------------------------------
 def display_row(rank, ticker, name, price, mcap, p1d, p7d, p30d, p1y, is_header=False):
-    # Ratio de colonnes
     cols = st.columns([0.4, 0.8, 2, 1, 1.2, 1, 1, 1, 1])
     
     if is_header:
@@ -307,9 +284,10 @@ def display_row(rank, ticker, name, price, mcap, p1d, p7d, p30d, p1y, is_header=
     else:
         cols[0].markdown(f"<span class='row-text'>**{rank}**</span>", unsafe_allow_html=True)
         
-        # --- ICI : BOUTON CLIQUABLE POUR LE TICKER ---
+        # BOUTON TICKER -> DÉCLENCHE L'ANALYSE AVEC ORIGINE 'RANKING'
         if cols[1].button(ticker, key=f"btn_{ticker}_{rank}"):
             st.session_state.selected_stock = ticker
+            st.session_state.origin = 'ranking'
             st.rerun()
             
         cols[2].markdown(f"<span class='row-text' style='color:#555;'>{name[:20]}</span>", unsafe_allow_html=True)
@@ -342,17 +320,13 @@ def render_ranking(sort_col, ascending):
 # ORCHESTRATION PRINCIPALE
 # ============================
 
-# SI UNE ACTION EST SÉLECTIONNÉE -> AFFICHER L'ANALYSE
 if st.session_state.selected_stock:
     show_analysis_page(st.session_state.selected_stock, st.session_state.selected_horizon)
-
-# SINON -> AFFICHER LE HUB (RECHERCHE + CLASSEMENTS)
 else:
     tab_analyse, tab_top100, tab_perf_pos, tab_perf_neg = st.tabs([
         "🔍 Analyse Complète", "🏆 Top 100", "📈 Top Hausses", "📉 Top Baisses"
     ])
 
-    # TAB 1: RECHERCHE
     with tab_analyse:
         st.header("🔍 Démarrez l'Analyse")
         col_input, col_radio, col_btn = st.columns([2, 2, 1])
@@ -366,10 +340,10 @@ else:
             if st.button("🚀 ANALYSER", type="primary", use_container_width=True):
                 if ticker_input:
                     st.session_state.selected_stock = ticker_input.strip().upper()
+                    st.session_state.origin = 'search' # DÉFINITION DE L'ORIGINE 'SEARCH'
                     st.rerun()
 
         st.markdown("---")
-        
         col1, col2 = st.columns([1, 1])
         with col1:
             st.header("ℹ️ Comment ça marche ?")
@@ -396,7 +370,6 @@ else:
         c2.metric("🌍 Couverture", "Global")
         c3.metric("⚡ Vitesse", "< 5 sec")
 
-    # TABS CLASSEMENTS
     with tab_top100: render_ranking('market_cap', False)
     with tab_perf_pos: render_ranking('perf_1y', False)
     with tab_perf_neg: render_ranking('perf_1y', True)
@@ -411,7 +384,6 @@ st.markdown("""
     div[data-testid="column"] { padding: 0px 1px !important; }
     .row-divider { margin-top: 5px !important; margin-bottom: 5px !important; border-top: 1px solid #f0f0f0; }
     
-    /* Boutons génériques */
     div[data-testid="stColumn"] button { 
         padding: 1px 8px !important;
         font-size: 0.75em !important; 
