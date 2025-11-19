@@ -406,25 +406,26 @@ else:
 # ---------------------------------------------------------
 st.markdown("""
 <style>
-    /* Ajustement global */
     .block-container { padding-top: 2rem; padding-bottom: 2rem; }
-    
-    /* 1. Forcer la hauteur du bouton pour qu'il fasse la même taille que l'input */
-    div[data-testid="stFormSubmitButton"] > button {
-        height: 42px !important; /* Hauteur standard des inputs Streamlit */
-        min-height: 42px !important;
-        border-radius: 4px !important; /* Coins moins ronds pour coller aux inputs */
-        border: none !important;
-        margin-top: 0px !important; /* Supprime la marge haute parasite */
-    }
-
-    /* 2. Réduire l'espace entre les colonnes pour l'effet "attaché" */
-    div[data-testid="column"] {
-        padding: 0px 2px !important; /* Très peu d'espace horizontal */
-    }
-    
-    /* Style des textes tableaux */
     .row-text { font-size: 15px; vertical-align: middle; }
     .row-divider { margin: 8px 0; border-top: 1px solid #333; }
+    
+    /* Réduire l'espace entre les colonnes */
+    div[data-testid="column"] { padding: 0px 4px !important; }
+
+    /* Style spécifique pour le bouton de recherche (le rouge) */
+    div[data-testid="stFormSubmitButton"] > button {
+        height: 42px !important;       /* Même hauteur que les inputs */
+        min-height: 42px !important;   /* Force la taille min */
+        border-radius: 8px !important; /* Plus arrondi pour matcher le style */
+        padding: 0px !important;       /* Enlève le gras interne */
+        border: none !important;
+        line-height: 1 !important;
+    }
+    
+    /* Ajustement fin pour aligner visuellement le bouton avec les inputs */
+    div[data-testid="stFormSubmitButton"] {
+        margin-bottom: 2px !important;
+    }
 </style>
 """, unsafe_allow_html=True)
