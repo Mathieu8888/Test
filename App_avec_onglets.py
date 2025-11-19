@@ -347,34 +347,34 @@ else:
         st.markdown("<h2 style='text-align: center;'>🔍 Démarrez l'Analyse</h2>", unsafe_allow_html=True)
         st.write("") # Espace
 
-        # --- RECHERCHE STYLE DASHBOARD (IMAGE) ---
-        # 1. Centrage du bloc avec des colonnes (1/6/1 ratio)
+        # 1. Centrage du bloc avec des colonnes
         _, c_main, _ = st.columns([1, 6, 1])
         
         with c_main:
-            with st.container(border=True):
-                with st.form(key='search_form', clear_on_submit=False):
+            # Pas de bordure Streamlit st.container(border=True) pour éviter le double cadre
+            # Seul le form aura une bordure
+            with st.form(key='search_form', clear_on_submit=False):
+                
+                # LIGNE 1: Input Texte (Label visible)
+                ticker_input = st.text_input("Ticker de l'action", placeholder="Ex: AAPL, NVIDIA, Total...", help="Entrez le symbole")
+                
+                st.write("") # Petit espace
+                
+                # LIGNE 2: Horizon (Gauche) + Bouton (Droite)
+                # 50/50 pour que le bouton ait de la place
+                c_opt, c_btn = st.columns([1, 1], vertical_alignment="bottom")
+                
+                with c_opt:
+                    horizon = st.radio("Horizon d'investissement", ["Court terme", "Long terme"], index=1, horizontal=True)
                     
-                    # LIGNE 1: Input Texte (Label visible pour matcher l'image)
-                    ticker_input = st.text_input("Ticker de l'action", placeholder="Ex: AAPL, NVIDIA, Total...", help="Entrez le symbole")
-                    
-                    st.write("") # Petit espace
-                    
-                    # LIGNE 2: Horizon (Gauche) + Bouton (Droite)
-                    # vertical_alignment="bottom" pour aligner le bouton et les radios
-                    c_opt, c_btn = st.columns([1.5, 1], vertical_alignment="bottom")
-                    
-                    with c_opt:
-                        horizon = st.radio("Horizon d'investissement", ["Court terme", "Long terme"], index=1, horizontal=True)
-                        
-                    with c_btn:
-                        submit_search = st.form_submit_button("🚀 Lancer l'analyse", type="primary", use_container_width=True)
-                    
-                    if submit_search and ticker_input:
-                        st.session_state.selected_stock = ticker_input.strip().upper()
-                        st.session_state.selected_horizon = 'court' if 'Court' in horizon else 'long'
-                        st.session_state.origin = 'search'
-                        st.rerun()
+                with c_btn:
+                    submit_search = st.form_submit_button("🚀 Lancer l'analyse", type="primary", use_container_width=True)
+                
+                if submit_search and ticker_input:
+                    st.session_state.selected_stock = ticker_input.strip().upper()
+                    st.session_state.selected_horizon = 'court' if 'Court' in horizon else 'long'
+                    st.session_state.origin = 'search'
+                    st.rerun()
 
         st.markdown("---")
         col1, col2 = st.columns([1, 1])
@@ -417,7 +417,16 @@ st.markdown("""
     div[data-testid="column"] { padding: 0px 5px !important; margin: 0px !important;}
     .row-divider { margin-top: 8px !important; margin-bottom: 8px !important; border-top: 1px solid #f0f0f0; }
     
-    div[data-testid="stColumn"] button { 
+    /* Bouton Analyse GRAS et GRAND */
+    div[data-testid="stFormSubmitButton"] > button { 
+        height: 45px !important;
+        width: 100% !important;
+        font-size: 18px !important;
+        font-weight: bold !important;
+    }
+
+    /* Autres boutons standards */
+    div[data-testid="stColumn"] button:not([kind="primary"]) { 
         padding: 0px 8px !important;
         font-size: 0.75em !important; 
         min-height: 1.5em !important;
@@ -428,5 +437,8 @@ st.markdown("""
     
     h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; }
     h4 { margin-top: 1.2rem; margin-bottom: 0.4rem; }
+    
+    /* Pour cacher les labels si besoin (non utilisé ici car on veut les labels comme sur l'image) */
+    /* label[for^="st-radio"] div[data-testid="stWidgetLabel"] { display: none; } */
 </style>
 """, unsafe_allow_html=True)
