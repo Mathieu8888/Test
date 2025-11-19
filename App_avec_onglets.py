@@ -343,29 +343,40 @@ else:
     ])
 
     with tab_analyse:
-        st.header("🔍 Démarrez l'Analyse")
+        # Centrer le titre
+        st.markdown("<h2 style='text-align: center; margin-bottom: 2rem;'>🔍 Démarrez l'Analyse</h2>", unsafe_allow_html=True)
         
-        with st.form(key='search_form', clear_on_submit=False):
-            # ALIGNEMENT PARFAIT SUR LA LIGNE DU BAS
-            c1, c2, c3 = st.columns([3, 2, 1.5], vertical_alignment="bottom", gap="medium")
-            
-            with c1:
-                # Input sans label (collapsed)
-                ticker_input = st.text_input("Ticker", placeholder="Ex: AAPL, NVIDIA, Total...", label_visibility="collapsed")
+        # Créer un conteneur centré pour le formulaire
+        _, center_col, _ = st.columns([1, 3, 1])
+        
+        with center_col:
+            with st.form(key='search_form', clear_on_submit=False):
+                # Input du ticker
+                ticker_input = st.text_input(
+                    "Ticker de l'action", 
+                    placeholder="Ex: AAPL, NVIDIA, Total...", 
+                    help="Entrez le symbole boursier de l'action à analyser"
+                )
                 
-            with c2:
-                # Radio sans label (collapsed)
-                horizon = st.radio("Horizon", ["Court terme", "Long terme"], index=1, horizontal=True, label_visibility="collapsed")
+                # Radio pour l'horizon
+                horizon = st.radio(
+                    "Horizon d'investissement", 
+                    ["Court terme", "Long terme"], 
+                    index=1, 
+                    horizontal=True,
+                    help="Court terme : quelques jours/semaines | Long terme : plusieurs mois/années"
+                )
                 
-            with c3:
-                # Bouton (aligné en bas par défaut dans la colonne)
-                submit_search = st.form_submit_button("🚀 Lancer l'analyse", type="primary", use_container_width=True)
-            
-            if submit_search and ticker_input:
-                st.session_state.selected_stock = ticker_input.strip().upper()
-                st.session_state.selected_horizon = 'court' if 'Court' in horizon else 'long'
-                st.session_state.origin = 'search'
-                st.rerun()
+                # Bouton centré
+                col1, col2, col3 = st.columns([1, 2, 1])
+                with col2:
+                    submit_search = st.form_submit_button("🚀 Lancer l'analyse", type="primary", use_container_width=True)
+                
+                if submit_search and ticker_input:
+                    st.session_state.selected_stock = ticker_input.strip().upper()
+                    st.session_state.selected_horizon = 'court' if 'Court' in horizon else 'long'
+                    st.session_state.origin = 'search'
+                    st.rerun()
 
         st.markdown("---")
         col1, col2 = st.columns([1, 1])
@@ -408,18 +419,50 @@ st.markdown("""
     div[data-testid="column"] { padding: 0px 5px !important; margin: 0px !important;}
     .row-divider { margin-top: 8px !important; margin-bottom: 8px !important; border-top: 1px solid #f0f0f0; }
     
-    /* Style des boutons (y compris "Lancer l'analyse") pour qu'ils soient bien épais */
+    /* Style du formulaire centré */
+    div[data-testid="stForm"] {
+        background-color: rgba(128, 128, 128, 0.05);
+        padding: 2rem;
+        border-radius: 15px;
+        border: 1px solid rgba(128, 128, 128, 0.1);
+    }
+    
+    /* Style des inputs et text_input */
+    div[data-testid="stTextInput"] > div > div > input {
+        text-align: center;
+        font-size: 16px;
+        padding: 12px;
+        border-radius: 10px;
+    }
+    
+    /* Style des radio buttons - centrer */
+    div[data-testid="stRadio"] {
+        display: flex;
+        justify-content: center;
+    }
+    
+    div[data-testid="stRadio"] > div {
+        display: flex;
+        justify-content: center;
+    }
+    
+    /* Style du bouton principal */
+    div[data-testid="stFormSubmitButton"] button {
+        min-height: 50px !important;
+        padding: 12px 30px !important;
+        font-size: 18px !important;
+        font-weight: 600 !important;
+        border-radius: 12px !important;
+        width: 100% !important;
+    }
+    
+    /* Style des autres boutons */
     div[data-testid="stColumn"] button { 
-        min-height: 45px !important; /* Hauteur forcée pour matcher l'input */
+        min-height: 45px !important;
         padding: 0px 15px !important;
         font-size: 16px !important;
         border-radius: 10px !important;
         border: 1px solid rgba(128, 128, 128, 0.2) !important;
-    }
-
-    /* Ajustement fin pour que les radios soient bien centrés verticalement par rapport à l'input et au bouton */
-    div[data-testid="stRadio"] {
-        margin-bottom: 5px !important; /* Petit ajustement pour remonter/centrer visuellement */
     }
 
     h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; }
