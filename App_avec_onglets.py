@@ -346,19 +346,19 @@ else:
         st.header("🔍 Démarrez l'Analyse")
         
         with st.form(key='search_form', clear_on_submit=False):
-            # Alignement vertical sur le bas (bottom)
-            # On agrandit un peu la colonne du milieu pour que les radios tiennent sur une ligne
+            # ALIGNEMENT PARFAIT SUR LA LIGNE DU BAS
             c1, c2, c3 = st.columns([3, 2, 1.5], vertical_alignment="bottom", gap="medium")
             
             with c1:
-                # label_visibility="collapsed" supprime le titre au-dessus
+                # Input sans label (collapsed)
                 ticker_input = st.text_input("Ticker", placeholder="Ex: AAPL, NVIDIA, Total...", label_visibility="collapsed")
                 
             with c2:
-                # label_visibility="collapsed" pour supprimer "Horizon..."
+                # Radio sans label (collapsed)
                 horizon = st.radio("Horizon", ["Court terme", "Long terme"], index=1, horizontal=True, label_visibility="collapsed")
                 
             with c3:
+                # Bouton (aligné en bas par défaut dans la colonne)
                 submit_search = st.form_submit_button("🚀 Lancer l'analyse", type="primary", use_container_width=True)
             
             if submit_search and ticker_input:
@@ -399,7 +399,7 @@ else:
     with tab_perf_neg: render_ranking('perf_1y', True, "losers")
 
 # ---------------------------------------------------------
-# CSS
+# CSS (AJUSTEMENTS FINS)
 # ---------------------------------------------------------
 st.markdown("""
 <style>
@@ -408,18 +408,18 @@ st.markdown("""
     div[data-testid="column"] { padding: 0px 5px !important; margin: 0px !important;}
     .row-divider { margin-top: 8px !important; margin-bottom: 8px !important; border-top: 1px solid #f0f0f0; }
     
+    /* Style des boutons (y compris "Lancer l'analyse") pour qu'ils soient bien épais */
     div[data-testid="stColumn"] button { 
-        padding: 0px 8px !important;
-        font-size: 0.75em !important; 
-        min-height: 1.5em !important;
-        line-height: 1.2 !important;
-        border-radius: 15px !important;
+        min-height: 45px !important; /* Hauteur forcée pour matcher l'input */
+        padding: 0px 15px !important;
+        font-size: 16px !important;
+        border-radius: 10px !important;
         border: 1px solid rgba(128, 128, 128, 0.2) !important;
     }
-    
-    /* CSS SPECIFIQUE POUR ALIGNER LES RADIOS PILE AU MILIEU DE LA LIGNE */
+
+    /* Ajustement fin pour que les radios soient bien centrés verticalement par rapport à l'input et au bouton */
     div[data-testid="stRadio"] {
-        margin-bottom: 2px !important;
+        margin-bottom: 5px !important; /* Petit ajustement pour remonter/centrer visuellement */
     }
 
     h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; }
