@@ -21,14 +21,8 @@ def reset_app():
     st.session_state.origin = None
     st.rerun()
 
-# --- EN-TÊTE ---
-col_title, col_home = st.columns([9, 1], vertical_alignment="center")
-with col_title:
-    st.title("📈 Analyseur d'Actions Boursières")
-with col_home:
-    if st.session_state.selected_stock:
-        if st.button("🏠", help="Retour à l'accueil", use_container_width=True):
-            reset_app()
+# --- EN-TÊTE (Sans le bouton maison) ---
+st.title("📈 Analyseur d'Actions Boursières")
 
 # ---------------------------------------------------------
 # DONNÉES ET UTILITAIRES
@@ -288,7 +282,7 @@ def show_analysis_page(company_ticker, horizon_code):
             st.error(f"Erreur: {e}")
 
 # ---------------------------------------------------------
-# FONCTION D'AFFICHAGE LIGNE
+# FONCTION D'AFFICHAGE LIGNE (Avec Suffixe pour Éviter les Doublons)
 # ---------------------------------------------------------
 def display_row(rank, ticker, name, price, mcap, p1d, p7d, p30d, p1y, is_header=False, list_suffix=""):
     cols = st.columns([0.4, 0.8, 2, 1, 1.2, 1, 1, 1, 1])
@@ -352,20 +346,20 @@ else:
     with tab_analyse:
         st.header("🔍 Démarrez l'Analyse")
         
-        # --- NOUVEAU DESIGN DE RECHERCHE (DASHBOARD PRO) ---
+        # --- RECHERCHE DASHBOARD PRO ---
         with st.container(border=True):
             with st.form(key='search_form', clear_on_submit=False):
-                # Utilisation de vertical_alignment="bottom" pour un alignement parfait sur la ligne de base
+                # vertical_alignment="bottom" pour aligner le bouton rouge avec le champ texte
                 c1, c2, c3 = st.columns([3, 1.5, 1.5], vertical_alignment="bottom", gap="medium")
                 
                 with c1:
                     ticker_input = st.text_input("Ticker ou Nom de l'entreprise", placeholder="Ex: AAPL, NVIDIA, Total...", help="Entrez le symbole boursier")
                     
                 with c2:
-                    horizon = st.radio("Horizon d'investissement", ["Court terme", "Long terme"], index=1, horizontal=True)
+                    # Label masqué par label_visibility="collapsed"
+                    horizon = st.radio("Horizon", ["Court terme", "Long terme"], index=1, horizontal=True, label_visibility="collapsed")
                     
                 with c3:
-                    # Le bouton prend toute la largeur de sa colonne
                     submit_search = st.form_submit_button("🚀 Lancer l'analyse", type="primary", use_container_width=True)
                 
                 if submit_search and ticker_input:
@@ -423,8 +417,6 @@ st.markdown("""
         border-radius: 15px !important;
         border: 1px solid rgba(128, 128, 128, 0.2) !important;
     }
-    
-    /* Suppression des styles CSS conflictuels pour le formulaire */
     
     h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; }
     h4 { margin-top: 1.2rem; margin-bottom: 0.4rem; }
