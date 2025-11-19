@@ -406,22 +406,25 @@ else:
 # ---------------------------------------------------------
 st.markdown("""
 <style>
+    /* Ajustement global */
     .block-container { padding-top: 2rem; padding-bottom: 2rem; }
-    .row-text { font-size: 15px; line-height: 1.6; vertical-align: middle; margin: 0; padding: 0; }
-    div[data-testid="column"] { padding: 0px 5px !important; margin: 0px !important;}
-    .row-divider { margin-top: 8px !important; margin-bottom: 8px !important; border-top: 1px solid #f0f0f0; }
     
-    /* Style des boutons standards */
-    div[data-testid="stColumn"] button:not([kind="primary"]) { 
-        padding: 0px 8px !important;
-        font-size: 0.75em !important; 
-        min-height: 1.5em !important;
-        line-height: 1.2 !important;
-        border-radius: 15px !important;
-        border: 1px solid rgba(128, 128, 128, 0.2) !important;
+    /* 1. Forcer la hauteur du bouton pour qu'il fasse la même taille que l'input */
+    div[data-testid="stFormSubmitButton"] > button {
+        height: 42px !important; /* Hauteur standard des inputs Streamlit */
+        min-height: 42px !important;
+        border-radius: 4px !important; /* Coins moins ronds pour coller aux inputs */
+        border: none !important;
+        margin-top: 0px !important; /* Supprime la marge haute parasite */
+    }
+
+    /* 2. Réduire l'espace entre les colonnes pour l'effet "attaché" */
+    div[data-testid="column"] {
+        padding: 0px 2px !important; /* Très peu d'espace horizontal */
     }
     
-    h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; }
-    h4 { margin-top: 1.2rem; margin-bottom: 0.4rem; }
+    /* Style des textes tableaux */
+    .row-text { font-size: 15px; vertical-align: middle; }
+    .row-divider { margin: 8px 0; border-top: 1px solid #333; }
 </style>
 """, unsafe_allow_html=True)
