@@ -292,7 +292,7 @@ def show_analysis_page(company_ticker, horizon_code):
             st.error(f"Erreur: {e}")
 
 # ---------------------------------------------------------
-# FONCTION D'AFFICHAGE LIGNE
+# FONCTION D'AFFICHAGE LIGNE (Avec Suffixe pour Éviter les Doublons)
 # ---------------------------------------------------------
 def display_row(rank, ticker, name, price, mcap, p1d, p7d, p30d, p1y, is_header=False, list_suffix=""):
     cols = st.columns([0.4, 0.8, 2, 1, 1.2, 1, 1, 1, 1])
@@ -356,21 +356,25 @@ else:
     with tab_analyse:
         st.header("🔍 Démarrez l'Analyse")
         
-        # --- FORMULAIRE DE RECHERCHE ALIGNÉ ---
+        # FORMULAIRE ALIGNÉ
         with st.form(key='search_form', clear_on_submit=False):
             
-            # Configuration des colonnes avec alignement vertical par le bas
-            col_input, col_radio, col_btn = st.columns([3, 2, 1.5], gap="medium")
+            # ASTUCE D'ALIGNEMENT : Utilisation de 'st.container' et CSS pour l'alignement vertical bas
+            c1, c2, c3 = st.columns([2, 1.2, 1])
             
-            with col_input:
-                ticker_input = st.text_input("Ticker", placeholder="ex: AAPL...", label_visibility="collapsed")
-                
-            with col_radio:
-                # Petite astuce CSS pour aligner les radios visuellement avec l'input
-                st.markdown('<style>div.row-widget.stRadio > div{flex-direction:row;justify-content: center; margin-top: 5px;}</style>', unsafe_allow_html=True)
-                horizon = st.radio("Horizon", ["Court terme", "Long terme"], index=1, label_visibility="collapsed")
-                
-            with col_btn:
+            with c1:
+                st.markdown('<div style="margin-bottom: 2px;">', unsafe_allow_html=True)
+                ticker_input = st.text_input("Ticker", placeholder="ex: AAPL, TSLA...", label_visibility="collapsed")
+                st.markdown('</div>', unsafe_allow_html=True)
+
+            with c2:
+                # Ajout de padding top pour descendre le radio button
+                st.markdown('<div style="padding-top: 5px;">', unsafe_allow_html=True)
+                horizon = st.radio("Horizon", ["Court terme", "Long terme"], index=1, horizontal=True, label_visibility="collapsed")
+                st.markdown('</div>', unsafe_allow_html=True)
+
+            with c3:
+                # Bouton submit qui prend la largeur et s'aligne
                 submit_search = st.form_submit_button("🚀 ANALYSER", type="primary", use_container_width=True)
             
             if submit_search and ticker_input:
@@ -411,7 +415,7 @@ else:
     with tab_perf_neg: render_ranking('perf_1y', True, "losers")
 
 # ---------------------------------------------------------
-# CSS (ALIGNEMENT FORCE FORMULAIRE)
+# CSS
 # ---------------------------------------------------------
 st.markdown("""
 <style>
@@ -429,14 +433,14 @@ st.markdown("""
         border: 1px solid rgba(128, 128, 128, 0.2) !important;
     }
     
-    /* CSS SPÉCIFIQUE POUR ALIGNER LE FORMULAIRE DE RECHERCHE */
-    [data-testid="stForm"] [data-testid="column"] {
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end; /* Pousse tout vers le bas */
+    /* Alignement vertical du formulaire */
+    div[data-testid="stForm"] [data-testid="column"] {
+        align-self: flex-end !important; /* Force l'alignement en bas */
+        padding-bottom: 0px !important;
     }
     
     h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; }
     h4 { margin-top: 1.2rem; margin-bottom: 0.4rem; }
+    label[for^="st-radio"] div[data-testid="stWidgetLabel"] { display: none; }
 </style>
 """, unsafe_allow_html=True)
