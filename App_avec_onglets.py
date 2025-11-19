@@ -10,7 +10,14 @@ sys.path.insert(0, os.path.dirname(__file__))
 from Algorithmev1 import StockScorer
 
 st.set_page_config(page_title="Analyseur Actions Boursières", page_icon="📈", layout="wide")
-st.title("📈 Analyseur d'Actions Boursières")
+
+# --- TITRE CLIQUABLE (RETOUR ACCUEIL) ---
+# Utilisation de HTML pour créer un lien qui recharge la page (.)
+st.markdown("""
+    <a href="." target="_self" style="text-decoration: none; color: inherit;">
+        <h1 style="margin-top: 0; padding-top: 0;">📈 Analyseur d'Actions Boursières</h1>
+    </a>
+""", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # DONNÉES POUR LES CLASSEMENTS
@@ -267,7 +274,8 @@ with tab_analyse:
                     
                     st.markdown("---")
                     
-                    # --- GRAPHIQUE PRIX (CORRIGÉ : ZOOM + SANS BARRE + BOUTONS) ---
+                    # --- GRAPHIQUE PRIX ---
+                    # Layout ajusté pour serrer les boutons
                     col_title, col_btns_spacer, col_btns = st.columns([1.5, 3.5, 3])
                     with col_title:
                         st.markdown("### 📈 Évolution Prix")
@@ -276,7 +284,8 @@ with tab_analyse:
                     if 'sel_per' not in st.session_state: st.session_state.sel_per = "1A"
                     
                     with col_btns:
-                        cols_btns_inner = st.columns(len(per_opts))
+                        # gap="small" pour réduire l'espace par défaut
+                        cols_btns_inner = st.columns(len(per_opts), gap="small")
                         for i, (l, c) in enumerate(per_opts):
                             with cols_btns_inner[i]:
                                 if st.button(l, key=f"p_{l}", type="primary" if st.session_state.sel_per==l else "secondary", use_container_width=True):
@@ -287,10 +296,8 @@ with tab_analyse:
                     hist = final.stock.history(period=sel_code)
                     
                     if not hist.empty:
-                        # Calcul pour l'échelle dynamique
                         y_min = hist['Close'].min()
                         y_max = hist['Close'].max()
-                        # Ajouter une petite marge de 5%
                         margin = (y_max - y_min) * 0.05
                         y_range = [y_min - margin, y_max + margin]
 
@@ -313,15 +320,13 @@ with tab_analyse:
                             fillcolor=fill_col
                         ))
                         
-                        # MISE A JOUR LAYOUT: Range Dynamique + Pas de légende
                         fig.update_layout(
                             height=400, 
                             margin=dict(l=0,r=0,t=10,b=0), 
                             showlegend=False,
-                            yaxis=dict(range=y_range) # Appliquer le zoom
+                            yaxis=dict(range=y_range)
                         )
                         
-                        # Config: Masquer la barre d'outils (zoom, pan, etc)
                         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
             except Exception as e:
@@ -380,22 +385,27 @@ with tab_perf_pos: render_ranking('perf_1y', False)
 with tab_perf_neg: render_ranking('perf_1y', True)
 
 # ---------------------------------------------------------
-# CSS (STYLE BOUTONS ARRONDIS)
+# CSS
 # ---------------------------------------------------------
 st.markdown("""
 <style>
     .block-container { padding-top: 2rem; padding-bottom: 2rem; }
     .row-text { font-size: 15px; line-height: 1.6; vertical-align: middle; }
-    div[data-testid="column"] { padding-top: 5px !important; padding-bottom: 5px !important; }
+    
+    /* Réduction padding horizontal des colonnes pour serrer les boutons */
+    div[data-testid="column"] { 
+        padding: 0px 1px !important; 
+    }
+    
     .row-divider { margin-top: 5px !important; margin-bottom: 5px !important; border-top: 1px solid #f0f0f0; }
     
-    /* CSS Boutons Jolis (Arrondis) */
+    /* Boutons compacts et arrondis */
     div[data-testid="stColumn"] button { 
-        padding: 1px 8px !important; /* un peu plus large pour la forme */
+        padding: 1px 8px !important;
         font-size: 0.75em !important; 
         min-height: 1.5em !important;
         line-height: 1.2 !important;
-        border-radius: 15px !important; /* BOUTONS ARRONDIS */
+        border-radius: 15px !important;
         border: 1px solid rgba(128, 128, 128, 0.2) !important;
     }
 
