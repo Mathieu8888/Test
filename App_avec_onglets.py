@@ -110,122 +110,33 @@ def get_valuation_analysis(info):
 def get_calculation_details(scorer, indicator_name):
     """Retourne les détails COMPLETS pour chaque indicateur"""
     info = scorer.info
-    
     def fmt_pct(v): 
         try: return f"{float(v)*100:.2f}%" if v is not None else "N/A"
         except: return "N/A"
-    
     def fmt_num(v):
         try: return f"{float(v):,.2f}" if v is not None else "N/A"
         except: return "N/A"
 
     details = {
-        "Momentum 6M": f"""
-**Momentum 6 Mois**
-- Prix actuel : ${info.get('currentPrice', 'N/A')}
-- Plus haut 52s : ${info.get('fiftyTwoWeekHigh', 'N/A')}
-- Indique la tendance moyen terme.
-""",
-        "Momentum 3M": f"""
-**Momentum 3 Mois**
-- Performance récente.
-- Prix actuel : ${info.get('currentPrice', 'N/A')}
-""",
-        "RSI": """
-**RSI (14 jours)**
-- < 30 : Survente (Potentiel achat)
-- > 70 : Surachat (Potentiel vente)
-- 40-60 : Neutre
-""",
-        "Volume": f"""
-**Volume**
-- Volume moyen : {fmt_num(info.get('averageVolume'))}
-- Mesure l'intérêt des investisseurs.
-""",
-        "P/E Ratio": f"""
-**Price to Earnings (PER)**
-- Ratio actuel : {fmt_num(info.get('trailingPE') or info.get('forwardPE'))}
-- < 15 : Souvent sous-évalué
-- > 25 : Souvent surévalué (ou forte croissance)
-""",
-        "PEG Ratio": f"""
-**PEG Ratio**
-- Ratio actuel : {fmt_num(info.get('pegRatio'))}
-- < 1 : Sous-évalué par rapport à la croissance
-- 1-2 : Valorisation correcte
-""",
-        "Croissance CA": f"""
-**Croissance Chiffre d'Affaires**
-- Taux : {fmt_pct(info.get('revenueGrowth'))}
-- Mesure le dynamisme de l'activité.
-""",
-        "Marges": f"""
-**Marge Nette**
-- Taux : {fmt_pct(info.get('profitMargins'))}
-- % de CA transformé en bénéfice.
-""",
-        "Marge Opé": f"""
-**Marge Opérationnelle**
-- Taux : {fmt_pct(info.get('operatingMargins'))}
-- Rentabilité de l'activité principale.
-""",
-        "ROE": f"""
-**Return on Equity (ROE)**
-- Taux : {fmt_pct(info.get('returnOnEquity'))}
-- Rentabilité des capitaux propres.
-- > 15% est généralement excellent.
-""",
-        "ROA": f"""
-**Return on Assets (ROA)**
-- Taux : {fmt_pct(info.get('returnOnAssets'))}
-- Efficacité d'utilisation des actifs.
-""",
-        "Dette/Capitaux": f"""
-**Dette / Capitaux Propres**
-- Ratio : {fmt_num(info.get('debtToEquity'))}
-- < 100 (ou 1) est préférable.
-- Mesure le levier financier.
-""",
-        "Dette/Actifs": f"""
-**Dette / Actifs**
-- Part des actifs financée par la dette.
-""",
-        "Free Cash Flow": f"""
-**Free Cash Flow**
-- Montant : ${fmt_num(info.get('freeCashflow'))}
-- Argent réel généré après investissements.
-- Crucial pour dividendes et rachats.
-""",
-        "Beta": f"""
-**Beta (Volatilité)**
-- Beta : {fmt_num(info.get('beta'))}
-- < 1 : Moins volatil que le marché (Défensif)
-- > 1 : Plus volatil que le marché (Offensif)
-""",
-        "Liquidité": f"""
-**Current Ratio**
-- Ratio : {fmt_num(info.get('currentRatio'))}
-- Capacité à payer les dettes court terme.
-- > 1.5 est un bon signe de santé.
-""",
-        "Dividende": f"""
-**Rendement du Dividende**
-- Yield : {fmt_pct(info.get('dividendYield'))}
-- Revenu annuel versé aux actionnaires.
-""",
-        "Croiss. Dividende": """
-**Croissance du Dividende**
-- Historique d'augmentation des dividendes sur 5 ans.
-""",
-        "Price to Book": f"""
-**Price to Book (P/B)**
-- Ratio : {fmt_num(info.get('priceToBook'))}
-- < 1 : Potentiellement sous-évalué (sous la valeur comptable).
-"""
+        "Momentum 6M": f"**Momentum 6 Mois**\n- Prix actuel : ${info.get('currentPrice', 'N/A')}\n- Plus haut 52s : ${info.get('fiftyTwoWeekHigh', 'N/A')}",
+        "Momentum 3M": f"**Momentum 3 Mois**\n- Performance récente.\n- Prix actuel : ${info.get('currentPrice', 'N/A')}",
+        "RSI": "**RSI (14 jours)**\n- < 30 : Survente (Potentiel achat)\n- > 70 : Surachat (Potentiel vente)",
+        "Volume": f"**Volume**\n- Volume moyen : {fmt_num(info.get('averageVolume'))}",
+        "P/E Ratio": f"**Price to Earnings (PER)**\n- Ratio actuel : {fmt_num(info.get('trailingPE') or info.get('forwardPE'))}\n- < 15 : Souvent sous-évalué",
+        "PEG Ratio": f"**PEG Ratio**\n- Ratio actuel : {fmt_num(info.get('pegRatio'))}\n- < 1 : Sous-évalué par rapport à la croissance",
+        "Croissance CA": f"**Croissance Chiffre d'Affaires**\n- Taux : {fmt_pct(info.get('revenueGrowth'))}",
+        "Marges": f"**Marge Nette**\n- Taux : {fmt_pct(info.get('profitMargins'))}",
+        "Marge Opé": f"**Marge Opérationnelle**\n- Taux : {fmt_pct(info.get('operatingMargins'))}",
+        "ROE": f"**Return on Equity (ROE)**\n- Taux : {fmt_pct(info.get('returnOnEquity'))}",
+        "ROA": f"**Return on Assets (ROA)**\n- Taux : {fmt_pct(info.get('returnOnAssets'))}",
+        "Dette/Capitaux": f"**Dette / Capitaux Propres**\n- Ratio : {fmt_num(info.get('debtToEquity'))}",
+        "Free Cash Flow": f"**Free Cash Flow**\n- Montant : ${fmt_num(info.get('freeCashflow'))}",
+        "Beta": f"**Beta (Volatilité)**\n- Beta : {fmt_num(info.get('beta'))}",
+        "Liquidité": f"**Current Ratio**\n- Ratio : {fmt_num(info.get('currentRatio'))}",
+        "Dividende": f"**Rendement du Dividende**\n- Yield : {fmt_pct(info.get('dividendYield'))}",
+        "Price to Book": f"**Price to Book (P/B)**\n- Ratio : {fmt_num(info.get('priceToBook'))}"
     }
-    
-    # Renvoie la description si elle existe, sinon un message générique
-    return details.get(indicator_name, "Détails de calcul spécifiques non disponibles pour cet indicateur.")
+    return details.get(indicator_name, "Détails non disponibles.")
 
 # --- PAGE D'ANALYSE ---
 def show_analysis_page(company_ticker, horizon_code):
@@ -367,10 +278,9 @@ def show_analysis_page(company_ticker, horizon_code):
             st.error(f"Erreur: {e}")
 
 # ---------------------------------------------------------
-# FONCTION D'AFFICHAGE LIGNE (Classement)
+# FONCTION D'AFFICHAGE LIGNE (Avec Suffixe pour Éviter les Doublons)
 # ---------------------------------------------------------
-def display_row(rank, ticker, name, price, mcap, p1d, p7d, p30d, p1y, is_header=False):
-    # Ajustement des colonnes pour que ce soit aéré mais aligné
+def display_row(rank, ticker, name, price, mcap, p1d, p7d, p30d, p1y, is_header=False, list_suffix=""):
     cols = st.columns([0.4, 0.8, 2, 1, 1.2, 1, 1, 1, 1])
     
     if is_header:
@@ -387,7 +297,8 @@ def display_row(rank, ticker, name, price, mcap, p1d, p7d, p30d, p1y, is_header=
     else:
         cols[0].markdown(f"<span class='row-text'>**{rank}**</span>", unsafe_allow_html=True)
         
-        if cols[1].button(ticker, key=f"btn_{ticker}_{rank}"):
+        # CLÉ UNIQUE GRACE AU SUFFIXE
+        if cols[1].button(ticker, key=f"btn_{ticker}_{rank}_{list_suffix}"):
             st.session_state.selected_stock = ticker
             st.session_state.origin = 'ranking'
             st.rerun()
@@ -401,7 +312,7 @@ def display_row(rank, ticker, name, price, mcap, p1d, p7d, p30d, p1y, is_header=
         cols[8].markdown(f"<span class='row-text'>{format_percentage(p1y)}</span>", unsafe_allow_html=True)
         st.markdown("<hr class='row-divider'>", unsafe_allow_html=True)
 
-def render_ranking(sort_col, ascending):
+def render_ranking(sort_col, ascending, list_name):
     with st.spinner("Chargement..."):
         data = []
         prog = st.progress(0)
@@ -414,9 +325,9 @@ def render_ranking(sort_col, ascending):
         df = pd.DataFrame(data)
         if not df.empty:
             df = df.sort_values(sort_col, ascending=ascending).reset_index(drop=True)
-            display_row(0,0,0,0,0,0,0,0,0, is_header=True)
+            display_row(0,0,0,0,0,0,0,0,0, is_header=True, list_suffix=list_name)
             for i, r in df.head(50).iterrows():
-                display_row(i+1, r['ticker'], r['name'], r['price'], r['market_cap'], r['perf_1d'], r['perf_7d'], r['perf_30d'], r['perf_1y'])
+                display_row(i+1, r['ticker'], r['name'], r['price'], r['market_cap'], r['perf_1d'], r['perf_7d'], r['perf_30d'], r['perf_1y'], list_suffix=list_name)
 
 # ============================
 # ORCHESTRATION PRINCIPALE
@@ -474,9 +385,10 @@ else:
         c2.metric("🌍 Couverture", "Global")
         c3.metric("⚡ Vitesse", "< 5 sec")
 
-    with tab_top100: render_ranking('market_cap', False)
-    with tab_perf_pos: render_ranking('perf_1y', False)
-    with tab_perf_neg: render_ranking('perf_1y', True)
+    # APPEL DES CLASSEMENTS AVEC IDENTIFIANT UNIQUE
+    with tab_top100: render_ranking('market_cap', False, "top100")
+    with tab_perf_pos: render_ranking('perf_1y', False, "gainers")
+    with tab_perf_neg: render_ranking('perf_1y', True, "losers")
 
 # ---------------------------------------------------------
 # CSS
@@ -486,10 +398,10 @@ st.markdown("""
     .block-container { padding-top: 2rem; padding-bottom: 2rem; }
     .row-text { font-size: 15px; line-height: 1.6; vertical-align: middle; margin: 0; padding: 0; }
     
-    /* Remettre un peu de padding pour aérer le classement */
+    /* PADDING COLONNES LÉGÈREMENT AUGMENTÉ POUR AÉRER */
     div[data-testid="column"] { padding: 0px 5px !important; margin: 0px !important;}
     
-    /* Marge plus grande pour les lignes */
+    /* MARGE LIGNES AUGMENTÉE */
     .row-divider { margin-top: 8px !important; margin-bottom: 8px !important; border-top: 1px solid #f0f0f0; }
     
     div[data-testid="stColumn"] button { 
