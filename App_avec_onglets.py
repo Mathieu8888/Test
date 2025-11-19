@@ -11,33 +11,27 @@ from Algorithmev1 import StockScorer
 
 st.set_page_config(page_title="Analyseur Actions Boursières", page_icon="📈", layout="wide")
 
-# --- GESTION DE L'ÉTAT (SESSION STATE) ---
-if 'selected_stock' not in st.session_state:
-    st.session_state.selected_stock = None
-if 'selected_horizon' not in st.session_state:
-    st.session_state.selected_horizon = 'long'
-if 'origin' not in st.session_state:
-    st.session_state.origin = None  # 'search' ou 'ranking'
+# --- GESTION DE L'ÉTAT ---
+if 'selected_stock' not in st.session_state: st.session_state.selected_stock = None
+if 'selected_horizon' not in st.session_state: st.session_state.selected_horizon = 'long'
+if 'origin' not in st.session_state: st.session_state.origin = None
 
-# --- FONCTION DE RÉINITIALISATION ---
 def reset_app():
     st.session_state.selected_stock = None
     st.session_state.origin = None
     st.rerun()
 
 # --- EN-TÊTE ---
-# Colonnes pour mettre le bouton Accueil à droite du titre
 col_title, col_home = st.columns([9, 1])
 with col_title:
     st.title("📈 Analyseur d'Actions Boursières")
 with col_home:
-    # Le bouton accueil n'apparait que si on est dans une analyse
     if st.session_state.selected_stock:
         if st.button("🏠", help="Retour à l'accueil", use_container_width=True):
             reset_app()
 
 # ---------------------------------------------------------
-# DONNÉES ET FONCTIONS UTILITAIRES
+# DONNÉES ET UTILITAIRES
 # ---------------------------------------------------------
 MAJOR_STOCKS = [
     "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA", "NFLX", "AMD", "INTC",
@@ -85,7 +79,7 @@ def format_percentage(value):
     else: return f'<span style="color: #888888;">• {value:.2f}%</span>'
 
 # ---------------------------------------------------------
-# LOGIQUE D'ANALYSE
+# FONCTIONS D'ANALYSE
 # ---------------------------------------------------------
 def get_valuation_analysis(info):
     pe = info.get('trailingPE') or info.get('forwardPE')
@@ -125,7 +119,6 @@ def get_calculation_details(scorer, indicator_name):
 
 # --- PAGE D'ANALYSE ---
 def show_analysis_page(company_ticker, horizon_code):
-    # Bouton de retour contextuel
     if st.session_state.origin == 'ranking':
         if st.button("← Retour aux classements", type="secondary"):
             reset_app()
@@ -133,7 +126,7 @@ def show_analysis_page(company_ticker, horizon_code):
         if st.button("🔍 Nouvelle recherche", type="secondary"):
             reset_app()
 
-    with st.spinner(f"Analyse détaillée de {company_ticker}..."):
+    with st.spinner(f"Analyse de {company_ticker}..."):
         try:
             scorer = StockScorer(company_ticker, horizon_code)
             if not scorer.fetch_data():
@@ -167,7 +160,6 @@ def show_analysis_page(company_ticker, horizon_code):
             
             st.markdown("---")
             
-            # Radar
             col_radar, col_top = st.columns([2, 1])
             with col_radar:
                 cats = list(final.scores.keys())
@@ -284,7 +276,6 @@ def display_row(rank, ticker, name, price, mcap, p1d, p7d, p30d, p1y, is_header=
     else:
         cols[0].markdown(f"<span class='row-text'>**{rank}**</span>", unsafe_allow_html=True)
         
-        # BOUTON TICKER -> DÉCLENCHE L'ANALYSE AVEC ORIGINE 'RANKING'
         if cols[1].button(ticker, key=f"btn_{ticker}_{rank}"):
             st.session_state.selected_stock = ticker
             st.session_state.origin = 'ranking'
@@ -329,19 +320,22 @@ else:
 
     with tab_analyse:
         st.header("🔍 Démarrez l'Analyse")
-        col_input, col_radio, col_btn = st.columns([2, 2, 1])
-        with col_input:
-            ticker_input = st.text_input("Entrez le Ticker", placeholder="ex: AAPL...", label_visibility="collapsed")
-        with col_radio:
-            horizon = st.radio("Horizon", ["Court terme", "Long terme"], index=1, horizontal=True, label_visibility="collapsed")
-            h_code = 'court' if 'Court' in horizon else 'long'
-            st.session_state.selected_horizon = h_code
-        with col_btn:
-            if st.button("🚀 ANALYSER", type="primary", use_container_width=True):
-                if ticker_input:
-                    st.session_state.selected_stock = ticker_input.strip().upper()
-                    st.session_state.origin = 'search' # DÉFINITION DE L'ORIGINE 'SEARCH'
-                    st.rerun()
+        
+        # --- FORMULAIRE DE RECHERCHE POUR UTILISER "ENTRÉE" ---
+        with st.form(key='search_form'):
+            col_input, col_radio, col_btn = st.columns([2, 2, 1])
+            with col_input:
+                ticker_input = st.text_input("Entrez le Ticker", placeholder="ex: AAPL...", label_visibility="collapsed")
+            with col_radio:
+                horizon = st.radio("Horizon", ["Court terme", "Long terme"], index=1, horizontal=True, label_visibility="collapsed")
+            with col_btn:
+                submit_search = st.form_submit_button("🚀 ANALYSER", type="primary", use_container_width=True)
+            
+            if submit_search and ticker_input:
+                st.session_state.selected_stock = ticker_input.strip().upper()
+                st.session_state.selected_horizon = 'court' if 'Court' in horizon else 'long'
+                st.session_state.origin = 'search'
+                st.rerun()
 
         st.markdown("---")
         col1, col2 = st.columns([1, 1])
@@ -380,12 +374,16 @@ else:
 st.markdown("""
 <style>
     .block-container { padding-top: 2rem; padding-bottom: 2rem; }
-    .row-text { font-size: 15px; line-height: 1.6; vertical-align: middle; }
-    div[data-testid="column"] { padding: 0px 1px !important; }
-    .row-divider { margin-top: 5px !important; margin-bottom: 5px !important; border-top: 1px solid #f0f0f0; }
+    .row-text { font-size: 15px; line-height: 1.4; vertical-align: middle; margin: 0; padding: 0; }
     
+    /* PADDING COLONNES TRES SERRÉ POUR LE CLASSEMENT */
+    div[data-testid="column"] { padding: 0px 0px !important; margin: 0px !important;}
+    
+    .row-divider { margin-top: 2px !important; margin-bottom: 2px !important; border-top: 1px solid #f0f0f0; }
+    
+    /* BOUTONS */
     div[data-testid="stColumn"] button { 
-        padding: 1px 8px !important;
+        padding: 0px 8px !important;
         font-size: 0.75em !important; 
         min-height: 1.5em !important;
         line-height: 1.2 !important;
