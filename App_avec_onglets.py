@@ -6,6 +6,7 @@ import time
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 
+# Importation de ton algorithme
 sys.path.insert(0, os.path.dirname(__file__))
 from Algorithmev1 import StockScorer
 
@@ -23,6 +24,73 @@ def reset_app():
 
 # --- EN-TÊTE ---
 st.title("📈 Analyseur d'Actions Boursières")
+
+# ---------------------------------------------------------
+# CSS AVANCÉ (DESIGN "FUSIONNÉ" TYPE AMAZON)
+# ---------------------------------------------------------
+st.markdown("""
+<style>
+    /* Reset global */
+    .block-container { padding-top: 2rem; padding-bottom: 2rem; }
+    .row-text { font-size: 15px; vertical-align: middle; }
+    .row-divider { margin: 8px 0; border-top: 1px solid #333; }
+    
+    /* --- BARRE DE RECHERCHE FUSIONNÉE --- */
+    
+    /* 1. Supprimer les espaces entre les colonnes du formulaire */
+    [data-testid="stForm"] [data-testid="stHorizontalBlock"] {
+        gap: 0px !important;
+    }
+    
+    [data-testid="stForm"] [data-testid="column"] {
+        padding: 0px !important;
+    }
+
+    /* 2. SELECTBOX (Gauche) */
+    [data-testid="stForm"] [data-testid="stSelectbox"] > div > div {
+        border-top-right-radius: 0px !important;
+        border-bottom-right-radius: 0px !important;
+        border-right: none !important; /* Pas de bordure à droite */
+        height: 45px !important;
+        display: flex;
+        align-items: center;
+    }
+
+    /* 3. INPUT TEXTE (Milieu) */
+    [data-testid="stForm"] [data-testid="stTextInput"] > div > div {
+        border-radius: 0px !important; /* Carré */
+        border-left: 1px solid #555 !important; /* Séparation visuelle fine */
+        border-right: none !important;
+        height: 45px !important;
+    }
+    
+    /* Enlever le focus bleu par défaut qui casse l'alignement */
+    [data-testid="stForm"] [data-testid="stTextInput"] input:focus {
+        box-shadow: none !important;
+        outline: none !important;
+    }
+
+    /* 4. BOUTON (Droite) */
+    [data-testid="stForm"] [data-testid="stFormSubmitButton"] > button {
+        border-top-left-radius: 0px !important;
+        border-bottom-left-radius: 0px !important;
+        border-top-right-radius: 8px !important;
+        border-bottom-right-radius: 8px !important;
+        height: 45px !important;
+        margin-top: 0px !important;
+        width: 100% !important;
+        border: none !important;
+    }
+
+    /* Masquer les labels dans le formulaire pour gagner de la place */
+    [data-testid="stForm"] label { display: none; }
+    
+    /* Style des boutons classiques (hors recherche) */
+    div[data-testid="stColumn"] button:not([kind="primary"]) { 
+        border-radius: 15px !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # DONNÉES ET UTILITAIRES
@@ -346,19 +414,21 @@ else:
         st.write("") 
         st.markdown("<h2 style='text-align: center; margin-bottom: 20px;'>🔍 Démarrez l'Analyse</h2>", unsafe_allow_html=True)
         
-        # Centrage horizontal
+        # Centrage horizontal avec colonnes
         _, c_main, _ = st.columns([1, 6, 1])
         
         with c_main:
             with st.form(key='search_form', clear_on_submit=False):
-                # Ratios ajustés : [Petit Select] [Grand Input] [Petit Bouton]
-                c_nav_1, c_nav_2, c_nav_3 = st.columns([1.5, 5, 0.8], vertical_alignment="bottom")
+                
+                # LA MISE EN PAGE AMAZON (Fusionnée)
+                # Ratios : [Select:2] [Input:6] [Button:1]
+                c_nav_1, c_nav_2, c_nav_3 = st.columns([2, 6, 1], vertical_alignment="bottom")
                 
                 with c_nav_1:
-                    horizon = st.selectbox("Horizon", ["Long terme", "Court terme"], label_visibility="collapsed")
+                    horizon = st.selectbox("Horizon", ["Long terme", "Court terme"])
                 
                 with c_nav_2:
-                    ticker_input = st.text_input("Ticker", placeholder="Rechercher action (ex: AAPL)...", label_visibility="collapsed")
+                    ticker_input = st.text_input("Ticker", placeholder="Rechercher action (ex: AAPL, TSLA)...")
                 
                 with c_nav_3:
                     submit_search = st.form_submit_button("🔍", type="primary", use_container_width=True)
@@ -399,65 +469,3 @@ else:
     with tab_top100: render_ranking('market_cap', False, "top100")
     with tab_perf_pos: render_ranking('perf_1y', False, "gainers")
     with tab_perf_neg: render_ranking('perf_1y', True, "losers")
-
-# ---------------------------------------------------------
-# CSS
-# ---------------------------------------------------------
-st.markdown("""
-<style>
-    /* Reset global */
-    .block-container { padding-top: 2rem; padding-bottom: 2rem; }
-    .row-text { font-size: 15px; vertical-align: middle; }
-    .row-divider { margin: 8px 0; border-top: 1px solid #333; }
-    
-    /* --- STYLE BARRE AMAZON (FUSIONNÉE) --- */
-    
-    /* 1. Enlever l'espace entre les colonnes DANS le formulaire uniquement */
-    div[data-testid="stForm"] div[data-testid="column"] {
-        padding: 0px !important;
-    }
-    
-    /* 2. Selectbox (Gauche) : Coins droits plats, pas de bordure droite */
-    div[data-testid="stForm"] div[data-testid="stSelectbox"] > div > div {
-        border-top-right-radius: 0px !important;
-        border-bottom-right-radius: 0px !important;
-        border-right: none !important;
-        min-height: 42px !important;
-    }
-
-    /* 3. Input Texte (Milieu) : Coins carrés, bordure gauche fine pour séparation visuelle */
-    div[data-testid="stForm"] div[data-testid="stTextInput"] > div > div {
-        border-radius: 0px !important;
-        border-left: 1px solid #444 !important;
-        min-height: 42px !important;
-    }
-
-    /* 4. Bouton (Droite) : Coins gauches plats, hauteur forcée, pas de marge */
-    div[data-testid="stForm"] div[data-testid="stFormSubmitButton"] > button {
-        border-top-left-radius: 0px !important;
-        border-bottom-left-radius: 0px !important;
-        border-top-right-radius: 8px !important;
-        border-bottom-right-radius: 8px !important;
-        height: 42px !important;
-        min-height: 42px !important;
-        margin-top: 0px !important;
-        border: none !important;
-        width: 100% !important;
-    }
-    
-    /* Force l'alignement horizontal sans gap par défaut de Streamlit */
-    div[data-testid="stForm"] [data-testid="stVerticalBlock"] {
-        gap: 0px !important;
-    }
-
-    /* Style des boutons standards hors formulaire */
-    div[data-testid="stColumn"] button:not([kind="primary"]) { 
-        padding: 0px 8px !important;
-        font-size: 0.75em !important; 
-        min-height: 1.5em !important;
-        line-height: 1.2 !important;
-        border-radius: 15px !important;
-        border: 1px solid rgba(128, 128, 128, 0.2) !important;
-    }
-</style>
-""", unsafe_allow_html=True)
