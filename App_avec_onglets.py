@@ -120,23 +120,23 @@ def get_calculation_details(scorer, indicator_name, score_val):
         except: return "N/A"
 
     base_details = {
-        "Momentum 6M": f"**Momentum 6 Mois**\n- Prix actuel : ${info.get('currentPrice', 'N/A')}\n- Plus haut 52s : ${info.get('fiftyTwoWeekHigh', 'N/A')}",
-        "Momentum 3M": f"**Momentum 3 Mois**\n- Performance récente.\n- Prix actuel : ${info.get('currentPrice', 'N/A')}",
-        "RSI": f"**RSI (14 jours)**\n- < 30 : Survente (Potentiel achat)\n- > 70 : Surachat (Potentiel vente)",
-        "Volume": f"**Volume**\n- Volume moyen : {fmt_num(info.get('averageVolume'))}",
-        "P/E Ratio": f"**Price to Earnings (PER)**\n- Ratio actuel : {fmt_num(info.get('trailingPE') or info.get('forwardPE'))}\n- < 15 : Souvent sous-évalué",
-        "PEG Ratio": f"**PEG Ratio**\n- Ratio actuel : {fmt_num(info.get('pegRatio'))}\n- < 1 : Sous-évalué par rapport à la croissance",
-        "Croissance CA": f"**Croissance Chiffre d'Affaires**\n- Taux : {fmt_pct(info.get('revenueGrowth'))}",
-        "Marges": f"**Marge Nette**\n- Taux : {fmt_pct(info.get('profitMargins'))}",
-        "Marge Opé": f"**Marge Opérationnelle**\n- Taux : {fmt_pct(info.get('operatingMargins'))}",
-        "ROE": f"**Return on Equity (ROE)**\n- Taux : {fmt_pct(info.get('returnOnEquity'))}",
-        "ROA": f"**Return on Assets (ROA)**\n- Taux : {fmt_pct(info.get('returnOnAssets'))}",
-        "Dette/Capitaux": f"**Dette / Capitaux Propres**\n- Ratio : {fmt_num(info.get('debtToEquity'))}",
-        "Free Cash Flow": f"**Free Cash Flow**\n- Montant : ${fmt_num(info.get('freeCashflow'))}",
-        "Beta": f"**Beta (Volatilité)**\n- Beta : {fmt_num(info.get('beta'))}",
-        "Liquidité": f"**Current Ratio**\n- Ratio : {fmt_num(info.get('currentRatio'))}",
-        "Dividende": f"**Rendement du Dividende**\n- Yield : {fmt_pct(info.get('dividendYield'))}",
-        "Price to Book": f"**Price to Book (P/B)**\n- Ratio : {fmt_num(info.get('priceToBook'))}"
+        "Momentum 6M": f"**Momentum 6 Mois ({score_val:.1f}/10)**\n- Prix actuel : ${info.get('currentPrice', 'N/A')}\n- Plus haut 52s : ${info.get('fiftyTwoWeekHigh', 'N/A')}",
+        "Momentum 3M": f"**Momentum 3 Mois ({score_val:.1f}/10)**\n- Performance récente.\n- Prix actuel : ${info.get('currentPrice', 'N/A')}",
+        "RSI": f"**RSI (14 jours) ({score_val:.1f}/10)**\n- < 30 : Survente (Potentiel achat)\n- > 70 : Surachat (Potentiel vente)",
+        "Volume": f"**Volume ({score_val:.1f}/10)**\n- Volume moyen : {fmt_num(info.get('averageVolume'))}",
+        "P/E Ratio": f"**Price to Earnings (PER) ({score_val:.1f}/10)**\n- Ratio actuel : {fmt_num(info.get('trailingPE') or info.get('forwardPE'))}\n- < 15 : Souvent sous-évalué",
+        "PEG Ratio": f"**PEG Ratio ({score_val:.1f}/10)**\n- Ratio actuel : {fmt_num(info.get('pegRatio'))}\n- < 1 : Sous-évalué par rapport à la croissance",
+        "Croissance CA": f"**Croissance Chiffre d'Affaires ({score_val:.1f}/10)**\n- Taux : {fmt_pct(info.get('revenueGrowth'))}",
+        "Marges": f"**Marge Nette ({score_val:.1f}/10)**\n- Taux : {fmt_pct(info.get('profitMargins'))}",
+        "Marge Opé": f"**Marge Opérationnelle ({score_val:.1f}/10)**\n- Taux : {fmt_pct(info.get('operatingMargins'))}",
+        "ROE": f"**Return on Equity (ROE) ({score_val:.1f}/10)**\n- Taux : {fmt_pct(info.get('returnOnEquity'))}",
+        "ROA": f"**Return on Assets (ROA) ({score_val:.1f}/10)**\n- Taux : {fmt_pct(info.get('returnOnAssets'))}",
+        "Dette/Capitaux": f"**Dette / Capitaux Propres ({score_val:.1f}/10)**\n- Ratio : {fmt_num(info.get('debtToEquity'))}",
+        "Free Cash Flow": f"**Free Cash Flow ({score_val:.1f}/10)**\n- Montant : ${fmt_num(info.get('freeCashflow'))}",
+        "Beta": f"**Beta (Volatilité) ({score_val:.1f}/10)**\n- Beta : {fmt_num(info.get('beta'))}",
+        "Liquidité": f"**Current Ratio ({score_val:.1f}/10)**\n- Ratio : {fmt_num(info.get('currentRatio'))}",
+        "Dividende": f"**Rendement du Dividende ({score_val:.1f}/10)**\n- Yield : {fmt_pct(info.get('dividendYield'))}",
+        "Price to Book": f"**Price to Book (P/B) ({score_val:.1f}/10)**\n- Ratio : {fmt_num(info.get('priceToBook'))}"
     }
     
     return base_details.get(indicator_name, "Détails non disponibles.")
@@ -207,13 +207,11 @@ def show_analysis_page(company_ticker, horizon_code):
             for name, val in sorted(final.scores.items(), key=lambda x: x[1], reverse=True):
                 e = "🟢" if val >= 7 else "🟡" if val >= 4 else "🔴"
                 
-                # Couleur pour la barre HTML
-                if val >= 7: color = "#00CC00" # Vert
-                elif val >= 4: color = "#FFD700" # Jaune
-                else: color = "#FF4B4B" # Rouge
+                if val >= 7: color = "#00CC00"
+                elif val >= 4: color = "#FFD700"
+                else: color = "#FF4B4B"
 
                 with st.expander(f"{e} **{name}**: {val:.1f}/10"):
-                    # BARRE DE PROGRESSION HTML AVEC TEXTE AU CENTRE
                     st.markdown(f"""
                         <div style="position: relative; width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 25px; margin-bottom: 10px;">
                             <div style="width: {val*10}%; background-color: {color}; height: 100%; border-radius: 10px;"></div>
@@ -294,7 +292,7 @@ def show_analysis_page(company_ticker, horizon_code):
             st.error(f"Erreur: {e}")
 
 # ---------------------------------------------------------
-# FONCTION D'AFFICHAGE LIGNE (Avec Suffixe pour Éviter les Doublons)
+# FONCTION D'AFFICHAGE LIGNE
 # ---------------------------------------------------------
 def display_row(rank, ticker, name, price, mcap, p1d, p7d, p30d, p1y, is_header=False, list_suffix=""):
     cols = st.columns([0.4, 0.8, 2, 1, 1.2, 1, 1, 1, 1])
@@ -358,22 +356,21 @@ else:
     with tab_analyse:
         st.header("🔍 Démarrez l'Analyse")
         
+        # --- FORMULAIRE DE RECHERCHE ALIGNÉ ---
         with st.form(key='search_form', clear_on_submit=False):
-            # Ajustement des colonnes pour un alignement parfait
-            col_input, col_radio, col_btn = st.columns([2, 1.2, 0.8])
+            
+            # Configuration des colonnes avec alignement vertical par le bas
+            col_input, col_radio, col_btn = st.columns([3, 2, 1.5], gap="medium")
             
             with col_input:
-                # Input label caché mais présent pour l'accessibilité
-                ticker_input = st.text_input("Recherche", placeholder="ex: AAPL, TSLA...", label_visibility="collapsed")
+                ticker_input = st.text_input("Ticker", placeholder="ex: AAPL...", label_visibility="collapsed")
                 
             with col_radio:
-                # Utilisation du CSS pour aligner verticalement
-                st.markdown('<div style="margin-top: 5px;">', unsafe_allow_html=True)
-                horizon = st.radio("Horizon", ["Court terme", "Long terme"], index=1, horizontal=True, label_visibility="collapsed")
-                st.markdown('</div>', unsafe_allow_html=True)
+                # Petite astuce CSS pour aligner les radios visuellement avec l'input
+                st.markdown('<style>div.row-widget.stRadio > div{flex-direction:row;justify-content: center; margin-top: 5px;}</style>', unsafe_allow_html=True)
+                horizon = st.radio("Horizon", ["Court terme", "Long terme"], index=1, label_visibility="collapsed")
                 
             with col_btn:
-                # Bouton submit qui prend la largeur
                 submit_search = st.form_submit_button("🚀 ANALYSER", type="primary", use_container_width=True)
             
             if submit_search and ticker_input:
@@ -414,7 +411,7 @@ else:
     with tab_perf_neg: render_ranking('perf_1y', True, "losers")
 
 # ---------------------------------------------------------
-# CSS
+# CSS (ALIGNEMENT FORCE FORMULAIRE)
 # ---------------------------------------------------------
 st.markdown("""
 <style>
@@ -432,14 +429,14 @@ st.markdown("""
         border: 1px solid rgba(128, 128, 128, 0.2) !important;
     }
     
-    /* Alignement spécifique pour le formulaire de recherche */
-    div[data-testid="stForm"] div[data-testid="column"] {
-        align-items: center;
+    /* CSS SPÉCIFIQUE POUR ALIGNER LE FORMULAIRE DE RECHERCHE */
+    [data-testid="stForm"] [data-testid="column"] {
         display: flex;
+        flex-direction: column;
+        justify-content: flex-end; /* Pousse tout vers le bas */
     }
     
     h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; }
     h4 { margin-top: 1.2rem; margin-bottom: 0.4rem; }
-    label[for^="st-radio"] div[data-testid="stWidgetLabel"] { display: none; }
 </style>
 """, unsafe_allow_html=True)
