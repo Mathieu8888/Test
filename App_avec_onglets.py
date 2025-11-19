@@ -237,23 +237,54 @@ with tab_analyse:
                             st.markdown(get_calculation_details(final, name))
                     
                     st.markdown("---")
+
+                    # --- NOUVEL EMPLACEMENT DES INFOS COMPLÉMENTAIRES ---
+                    st.markdown("### 📊 Informations Complémentaires")
+                    col1_info, col2_info = st.columns(2)
+                    with col1_info:
+                        st.markdown("**📈 Données de Marché**")
+                        st.write(f"- **Capitalisation** : ${info.get('marketCap', 0):,.0f}")
+                        st.write(f"- **Volume moyen** : {info.get('averageVolume', 0):,.0f}")
+                        st.write(f"- **Plus haut 52 sem** : ${info.get('fiftyTwoWeekHigh', 'N/A')}")
+                        st.write(f"- **Plus bas 52 sem** : ${info.get('fiftyTwoWeekLow', 'N/A')}")
+                        
+                        # Calcul et affichage de la position dans la fourchette 52 semaines
+                        high_52 = info.get('fiftyTwoWeekHigh')
+                        low_52 = info.get('fiftyTwoWeekLow')
+                        current_price = info.get('currentPrice')
+                        if all([high_52, low_52, current_price]) and (high_52 - low_52) > 0:
+                            position = ((current_price - low_52) / (high_52 - low_52)) * 100
+                            st.write(f"- **Position fourchette 52 sem** : {position:.1f}%")
+                        else:
+                            st.write(f"- **Position fourchette 52 sem** : N/A")
+                    with col2_info:
+                        st.markdown("**💼 Ratios Financiers**")
+                        pe_ratio = info.get('trailingPE') or info.get('forwardPE')
+                        st.write(f"- **P/E Ratio** : {f'{pe_ratio:.2f}' if pe_ratio else 'N/A'}")
+                        st.write(f"- **PEG Ratio** : {f'{info.get('pegRatio'):.2f}' if info.get('pegRatio') else 'N/A'}")
+                        st.write(f"- **Price to Book** : {f'{info.get('priceToBook'):.2f}' if info.get('priceToBook') else 'N/A'}")
+                        div_yield = info.get('dividendYield')
+                        st.write(f"- **Dividend Yield** : {f'{div_yield*100:.2f}%' if div_yield else 'N/A'}")
+                        beta = info.get('beta')
+                        st.write(f"- **Beta** : {f'{beta:.2f}' if beta else 'N/A'}")
                     
-                    # --- MODIFICATIONS ICI : BOUTONS PETITS À DROITE + MAX ---
-                    col_title, col_btns = st.columns([3, 4])
+                    st.markdown("---")
+                    
+                    # --- GRAPHIQUE PRIX (MODIFIÉ) ---
+                    col_title, col_btns_spacer, col_btns = st.columns([1.5, 3.5, 3]) # Ajustement des ratios
                     with col_title:
                         st.markdown("### 📈 Évolution Prix")
                     
-                    # Liste mise à jour avec MAX
                     per_opts = [("1S","5d"),("1M","1mo"),("3M","3mo"),("6M","6mo"),("1A","1y"),("5A","5y"), ("MAX", "max")]
                     if 'sel_per' not in st.session_state: st.session_state.sel_per = "1A"
                     
                     with col_btns:
-                        # Sous-colonnes serrées pour les boutons
-                        cols = st.columns(len(per_opts))
+                        cols_btns_inner = st.columns(len(per_opts)) # Utilisation de 7 colonnes pour les 7 boutons
                         for i, (l, c) in enumerate(per_opts):
-                            if cols[i].button(l, key=f"p_{l}", type="primary" if st.session_state.sel_per==l else "secondary", use_container_width=True):
-                                st.session_state.sel_per = l
-                                st.rerun()
+                            with cols_btns_inner[i]:
+                                if st.button(l, key=f"p_{l}", type="primary" if st.session_state.sel_per==l else "secondary", use_container_width=True):
+                                    st.session_state.sel_per = l
+                                    st.rerun()
                             
                     sel_code = dict(per_opts)[st.session_state.sel_per]
                     hist = final.stock.history(period=sel_code)
@@ -261,7 +292,6 @@ with tab_analyse:
                     if not hist.empty:
                         perf = ((hist['Close'][-1] - hist['Close'][0])/hist['Close'][0])*100
                         
-                        # Gestion couleur explicite
                         if perf > 0:
                             line_col = '#00CC00'
                             fill_col = 'rgba(0, 204, 0, 0.1)'
@@ -279,7 +309,7 @@ with tab_analyse:
                             fillcolor=fill_col
                         ))
                         fig.update_layout(height=400, margin=dict(l=0,r=0,t=10,b=0), showlegend=False)
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}) # <<< CORRECTION ICI
 
             except Exception as e:
                 st.error(f"Erreur: {e}")
@@ -337,25 +367,37 @@ with tab_perf_pos: render_ranking('perf_1y', False)
 with tab_perf_neg: render_ranking('perf_1y', True)
 
 # ---------------------------------------------------------
-# CSS
+# CSS (MIS À JOUR)
 # ---------------------------------------------------------
 st.markdown("""
 <style>
     .block-container { padding-top: 2rem; padding-bottom: 2rem; }
     .row-text { font-size: 15px; line-height: 1.6; vertical-align: middle; }
-    div[data-testid="column"] { padding-top: 10px !important; padding-bottom: 10px !important; }
+    div[data-testid="column"] { padding-top: 5px !important; padding-bottom: 5px !important; } /* Légèrement réduit */
     .row-divider { margin-top: 5px !important; margin-bottom: 5px !important; border-top: 1px solid #f0f0f0; }
     
-    /* CSS Ajusté pour petits boutons */
-    div[data-testid="column"] button[kind="secondary"] { 
-        padding: 2px 5px !important; 
-        font-size: 0.8em !important; 
-        min-height: 1em !important;
+    /* CSS Ajusté pour des boutons encore plus petits */
+    div[data-testid="stColumn"] button { /* Cible spécifiquement les boutons dans les colonnes */
+        padding: 1px 3px !important; /* Réduit le padding interne */
+        font-size: 0.7em !important;  /* Réduit la taille de la police */
+        min-height: 0.5em !important; /* Réduit la hauteur minimale */
+        line-height: 1.2 !important;  /* Ajuste l'interligne */
     }
-    div[data-testid="column"] button[kind="primary"] { 
-        padding: 2px 5px !important; 
-        font-size: 0.8em !important; 
-        min-height: 1em !important;
+
+    /* Ajuster la marge des titres h3 et h4 pour qu'ils soient moins collés au-dessus */
+    h3 {
+        margin-top: 1.5rem; /* Ajoute un peu de marge au-dessus des titres h3 */
+        margin-bottom: 0.5rem; /* Réduit un peu la marge en dessous */
     }
+    h4 {
+        margin-top: 1.2rem; /* Ajoute un peu de marge au-dessus des titres h4 */
+        margin-bottom: 0.4rem; /* Réduit un peu la marge en dessous */
+    }
+
+    /* Masquer le texte du label du radio button pour "Horizon d'investissement" */
+    label[for^="st-radio"] div[data-testid="stWidgetLabel"] {
+        display: none;
+    }
+
 </style>
 """, unsafe_allow_html=True)
