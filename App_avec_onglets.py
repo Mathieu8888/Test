@@ -108,13 +108,10 @@ def get_valuation_analysis(info):
     return signals, verdict
 
 def get_calculation_details(scorer, indicator_name, score_val):
-    """Retourne les détails COMPLETS pour chaque indicateur."""
     info = scorer.info
-    
     def fmt_pct(v): 
         try: return f"{float(v)*100:.2f}%" if v is not None else "N/A"
         except: return "N/A"
-    
     def fmt_num(v):
         try: return f"{float(v):,.2f}" if v is not None else "N/A"
         except: return "N/A"
@@ -138,7 +135,6 @@ def get_calculation_details(scorer, indicator_name, score_val):
         "Dividende": f"**Rendement du Dividende ({score_val:.1f}/10)**\n- Yield : {fmt_pct(info.get('dividendYield'))}",
         "Price to Book": f"**Price to Book (P/B) ({score_val:.1f}/10)**\n- Ratio : {fmt_num(info.get('priceToBook'))}"
     }
-    
     return base_details.get(indicator_name, "Détails non disponibles.")
 
 # --- PAGE D'ANALYSE ---
@@ -292,7 +288,7 @@ def show_analysis_page(company_ticker, horizon_code):
             st.error(f"Erreur: {e}")
 
 # ---------------------------------------------------------
-# FONCTION D'AFFICHAGE LIGNE (Avec Suffixe pour Éviter les Doublons)
+# FONCTION D'AFFICHAGE LIGNE
 # ---------------------------------------------------------
 def display_row(rank, ticker, name, price, mcap, p1d, p7d, p30d, p1y, is_header=False, list_suffix=""):
     cols = st.columns([0.4, 0.8, 2, 1, 1.2, 1, 1, 1, 1])
@@ -356,25 +352,23 @@ else:
     with tab_analyse:
         st.header("🔍 Démarrez l'Analyse")
         
-        # FORMULAIRE ALIGNÉ
         with st.form(key='search_form', clear_on_submit=False):
+            # ALIGNEMENT PARFAIT : on utilise vertical_alignment="bottom" pour tout aligner sur le bas
+            col_input, col_radio, col_btn = st.columns([3, 2, 1.5], vertical_alignment="bottom")
             
-            # ASTUCE D'ALIGNEMENT : Utilisation de 'st.container' et CSS pour l'alignement vertical bas
-            c1, c2, c3 = st.columns([2, 1.2, 1])
-            
-            with c1:
-                st.markdown('<div style="margin-bottom: 2px;">', unsafe_allow_html=True)
-                ticker_input = st.text_input("Ticker", placeholder="ex: AAPL, TSLA...", label_visibility="collapsed")
-                st.markdown('</div>', unsafe_allow_html=True)
-
-            with c2:
-                # Ajout de padding top pour descendre le radio button
-                st.markdown('<div style="padding-top: 5px;">', unsafe_allow_html=True)
+            with col_input:
+                ticker_input = st.text_input("Ticker", placeholder="ex: AAPL...", label_visibility="collapsed")
+                
+            with col_radio:
+                # Petite astuce pour décaler les radios vers le bas et les centrer horizontalement
+                st.markdown("""
+                <style>
+                div[data-testid="stRadio"] > label { display: none; } 
+                </style>
+                """, unsafe_allow_html=True)
                 horizon = st.radio("Horizon", ["Court terme", "Long terme"], index=1, horizontal=True, label_visibility="collapsed")
-                st.markdown('</div>', unsafe_allow_html=True)
-
-            with c3:
-                # Bouton submit qui prend la largeur et s'aligne
+                
+            with col_btn:
                 submit_search = st.form_submit_button("🚀 ANALYSER", type="primary", use_container_width=True)
             
             if submit_search and ticker_input:
@@ -433,14 +427,7 @@ st.markdown("""
         border: 1px solid rgba(128, 128, 128, 0.2) !important;
     }
     
-    /* Alignement vertical du formulaire */
-    div[data-testid="stForm"] [data-testid="column"] {
-        align-self: flex-end !important; /* Force l'alignement en bas */
-        padding-bottom: 0px !important;
-    }
-    
     h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; }
     h4 { margin-top: 1.2rem; margin-bottom: 0.4rem; }
-    label[for^="st-radio"] div[data-testid="stWidgetLabel"] { display: none; }
 </style>
 """, unsafe_allow_html=True)
