@@ -196,7 +196,6 @@ def show_analysis_page(company_ticker, horizon_code):
             st.markdown("### 📊 Indicateurs Détaillés")
             for name, val in sorted(final.scores.items(), key=lambda x: x[1], reverse=True):
                 e = "🟢" if val >= 7 else "🟡" if val >= 4 else "🔴"
-                
                 if val >= 7: color = "#00CC00"
                 elif val >= 4: color = "#FFD700"
                 else: color = "#FF4B4B"
@@ -346,17 +345,17 @@ else:
     with tab_analyse:
         st.header("🔍 Démarrez l'Analyse")
         
-        # FORMULAIRE DE RECHERCHE UNIQUE ET PROPRE (SANS DOUBLE BORDURE NI TITRES)
         with st.form(key='search_form', clear_on_submit=False):
-            # Colonnes équilibrées avec alignement vertical en bas pour que tout soit droit
+            # Alignement vertical sur le bas (bottom)
+            # On agrandit un peu la colonne du milieu pour que les radios tiennent sur une ligne
             c1, c2, c3 = st.columns([3, 2, 1.5], vertical_alignment="bottom", gap="medium")
             
             with c1:
-                # label_visibility="collapsed" = PAS DE TITRE, PAS DE LIGNE EN TROP
-                ticker_input = st.text_input("Ticker", placeholder="Ex: AAPL, NVIDIA...", label_visibility="collapsed")
+                # label_visibility="collapsed" supprime le titre au-dessus
+                ticker_input = st.text_input("Ticker", placeholder="Ex: AAPL, NVIDIA, Total...", label_visibility="collapsed")
                 
             with c2:
-                # Idem pour les radios
+                # label_visibility="collapsed" pour supprimer "Horizon..."
                 horizon = st.radio("Horizon", ["Court terme", "Long terme"], index=1, horizontal=True, label_visibility="collapsed")
                 
             with c3:
@@ -418,10 +417,9 @@ st.markdown("""
         border: 1px solid rgba(128, 128, 128, 0.2) !important;
     }
     
-    /* CSS POUR ALIGNER LES RADIOS PILE AU MILIEU */
+    /* CSS SPECIFIQUE POUR ALIGNER LES RADIOS PILE AU MILIEU DE LA LIGNE */
     div[data-testid="stRadio"] {
-        margin-bottom: 0px !important;
-        padding-bottom: 5px !important; /* Ajustement fin pour l'alignement visuel */
+        margin-bottom: 2px !important;
     }
 
     h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; }
