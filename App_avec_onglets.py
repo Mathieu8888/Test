@@ -351,24 +351,21 @@ else:
         _, c_main, _ = st.columns([1, 6, 1])
         
         with c_main:
-            # Pas de bordure Streamlit st.container(border=True) pour éviter le double cadre
-            # Seul le form aura une bordure
             with st.form(key='search_form', clear_on_submit=False):
                 
                 # LIGNE 1: Input Texte (Label visible)
                 ticker_input = st.text_input("Ticker de l'action", placeholder="Ex: AAPL, NVIDIA, Total...", help="Entrez le symbole")
                 
-                st.write("") # Petit espace
+                st.write("") 
                 
-                # LIGNE 2: Horizon (Gauche) + Bouton (Droite)
-                # 50/50 pour que le bouton ait de la place
-                c_opt, c_btn = st.columns([1, 1], vertical_alignment="bottom")
+                # LIGNE 2: Horizon
+                st.write("**Horizon d'investissement**")
+                horizon = st.radio("Horizon d'investissement", ["Court terme", "Long terme"], index=1, horizontal=True, label_visibility="collapsed")
                 
-                with c_opt:
-                    horizon = st.radio("Horizon d'investissement", ["Court terme", "Long terme"], index=1, horizontal=True)
-                    
-                with c_btn:
-                    submit_search = st.form_submit_button("🚀 Lancer l'analyse", type="primary", use_container_width=True)
+                st.write("")
+                
+                # LIGNE 3: Bouton Pleine Largeur
+                submit_search = st.form_submit_button("🚀 Lancer l'analyse", type="primary", use_container_width=True)
                 
                 if submit_search and ticker_input:
                     st.session_state.selected_stock = ticker_input.strip().upper()
@@ -437,8 +434,5 @@ st.markdown("""
     
     h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; }
     h4 { margin-top: 1.2rem; margin-bottom: 0.4rem; }
-    
-    /* Pour cacher les labels si besoin (non utilisé ici car on veut les labels comme sur l'image) */
-    /* label[for^="st-radio"] div[data-testid="stWidgetLabel"] { display: none; } */
 </style>
 """, unsafe_allow_html=True)
