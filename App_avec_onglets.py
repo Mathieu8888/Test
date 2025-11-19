@@ -343,7 +343,7 @@ else:
     ])
 
     with tab_analyse:
-        st.write("") # Espace
+        st.write("") 
         st.markdown("<h2 style='text-align: center; margin-bottom: 20px;'>🔍 Démarrez l'Analyse</h2>", unsafe_allow_html=True)
         
         # Centrage horizontal
@@ -351,11 +351,10 @@ else:
         
         with c_main:
             with st.form(key='search_form', clear_on_submit=False):
-                # Mise en page "Amazon Style" : Horizon | Ticker | Bouton
-                c_nav_1, c_nav_2, c_nav_3 = st.columns([1.5, 5, 1], vertical_alignment="bottom")
+                # Ratios ajustés : [Petit Select] [Grand Input] [Petit Bouton]
+                c_nav_1, c_nav_2, c_nav_3 = st.columns([1.5, 5, 0.8], vertical_alignment="bottom")
                 
                 with c_nav_1:
-                    # Selectbox agit comme la catégorie Amazon
                     horizon = st.selectbox("Horizon", ["Long terme", "Court terme"], label_visibility="collapsed")
                 
                 with c_nav_2:
@@ -406,26 +405,59 @@ else:
 # ---------------------------------------------------------
 st.markdown("""
 <style>
+    /* Reset global */
     .block-container { padding-top: 2rem; padding-bottom: 2rem; }
     .row-text { font-size: 15px; vertical-align: middle; }
     .row-divider { margin: 8px 0; border-top: 1px solid #333; }
     
-    /* Réduire l'espace entre les colonnes */
-    div[data-testid="column"] { padding: 0px 4px !important; }
-
-    /* Style spécifique pour le bouton de recherche (le rouge) */
-    div[data-testid="stFormSubmitButton"] > button {
-        height: 42px !important;       /* Même hauteur que les inputs */
-        min-height: 42px !important;   /* Force la taille min */
-        border-radius: 8px !important; /* Plus arrondi pour matcher le style */
-        padding: 0px !important;       /* Enlève le gras interne */
-        border: none !important;
-        line-height: 1 !important;
+    /* --- STYLE BARRE AMAZON (FUSIONNÉE) --- */
+    
+    /* 1. Enlever l'espace entre les colonnes DANS le formulaire uniquement */
+    div[data-testid="stForm"] div[data-testid="column"] {
+        padding: 0px !important;
     }
     
-    /* Ajustement fin pour aligner visuellement le bouton avec les inputs */
-    div[data-testid="stFormSubmitButton"] {
-        margin-bottom: 2px !important;
+    /* 2. Selectbox (Gauche) : Coins droits plats, pas de bordure droite */
+    div[data-testid="stForm"] div[data-testid="stSelectbox"] > div > div {
+        border-top-right-radius: 0px !important;
+        border-bottom-right-radius: 0px !important;
+        border-right: none !important;
+        min-height: 42px !important;
+    }
+
+    /* 3. Input Texte (Milieu) : Coins carrés, bordure gauche fine pour séparation visuelle */
+    div[data-testid="stForm"] div[data-testid="stTextInput"] > div > div {
+        border-radius: 0px !important;
+        border-left: 1px solid #444 !important;
+        min-height: 42px !important;
+    }
+
+    /* 4. Bouton (Droite) : Coins gauches plats, hauteur forcée, pas de marge */
+    div[data-testid="stForm"] div[data-testid="stFormSubmitButton"] > button {
+        border-top-left-radius: 0px !important;
+        border-bottom-left-radius: 0px !important;
+        border-top-right-radius: 8px !important;
+        border-bottom-right-radius: 8px !important;
+        height: 42px !important;
+        min-height: 42px !important;
+        margin-top: 0px !important;
+        border: none !important;
+        width: 100% !important;
+    }
+    
+    /* Force l'alignement horizontal sans gap par défaut de Streamlit */
+    div[data-testid="stForm"] [data-testid="stVerticalBlock"] {
+        gap: 0px !important;
+    }
+
+    /* Style des boutons standards hors formulaire */
+    div[data-testid="stColumn"] button:not([kind="primary"]) { 
+        padding: 0px 8px !important;
+        font-size: 0.75em !important; 
+        min-height: 1.5em !important;
+        line-height: 1.2 !important;
+        border-radius: 15px !important;
+        border: 1px solid rgba(128, 128, 128, 0.2) !important;
     }
 </style>
 """, unsafe_allow_html=True)
