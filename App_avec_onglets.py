@@ -107,36 +107,40 @@ def get_valuation_analysis(info):
     else: verdict = "🟡 **ÉQUILIBRÉE**"
     return signals, verdict
 
-def get_calculation_details(scorer, indicator_name):
-    """Retourne les détails COMPLETS pour chaque indicateur"""
+def get_calculation_details(scorer, indicator_name, score_val):
+    """Retourne les détails COMPLETS pour chaque indicateur, incluant le score."""
     info = scorer.info
+    
     def fmt_pct(v): 
         try: return f"{float(v)*100:.2f}%" if v is not None else "N/A"
         except: return "N/A"
+    
     def fmt_num(v):
         try: return f"{float(v):,.2f}" if v is not None else "N/A"
         except: return "N/A"
 
-    details = {
-        "Momentum 6M": f"**Momentum 6 Mois**\n- Prix actuel : ${info.get('currentPrice', 'N/A')}\n- Plus haut 52s : ${info.get('fiftyTwoWeekHigh', 'N/A')}",
-        "Momentum 3M": f"**Momentum 3 Mois**\n- Performance récente.\n- Prix actuel : ${info.get('currentPrice', 'N/A')}",
-        "RSI": "**RSI (14 jours)**\n- < 30 : Survente (Potentiel achat)\n- > 70 : Surachat (Potentiel vente)",
-        "Volume": f"**Volume**\n- Volume moyen : {fmt_num(info.get('averageVolume'))}",
-        "P/E Ratio": f"**Price to Earnings (PER)**\n- Ratio actuel : {fmt_num(info.get('trailingPE') or info.get('forwardPE'))}\n- < 15 : Souvent sous-évalué",
-        "PEG Ratio": f"**PEG Ratio**\n- Ratio actuel : {fmt_num(info.get('pegRatio'))}\n- < 1 : Sous-évalué par rapport à la croissance",
-        "Croissance CA": f"**Croissance Chiffre d'Affaires**\n- Taux : {fmt_pct(info.get('revenueGrowth'))}",
-        "Marges": f"**Marge Nette**\n- Taux : {fmt_pct(info.get('profitMargins'))}",
-        "Marge Opé": f"**Marge Opérationnelle**\n- Taux : {fmt_pct(info.get('operatingMargins'))}",
-        "ROE": f"**Return on Equity (ROE)**\n- Taux : {fmt_pct(info.get('returnOnEquity'))}",
-        "ROA": f"**Return on Assets (ROA)**\n- Taux : {fmt_pct(info.get('returnOnAssets'))}",
-        "Dette/Capitaux": f"**Dette / Capitaux Propres**\n- Ratio : {fmt_num(info.get('debtToEquity'))}",
-        "Free Cash Flow": f"**Free Cash Flow**\n- Montant : ${fmt_num(info.get('freeCashflow'))}",
-        "Beta": f"**Beta (Volatilité)**\n- Beta : {fmt_num(info.get('beta'))}",
-        "Liquidité": f"**Current Ratio**\n- Ratio : {fmt_num(info.get('currentRatio'))}",
-        "Dividende": f"**Rendement du Dividende**\n- Yield : {fmt_pct(info.get('dividendYield'))}",
-        "Price to Book": f"**Price to Book (P/B)**\n- Ratio : {fmt_num(info.get('priceToBook'))}"
+    # Ajoute le score de l'indicateur à la première ligne de chaque description
+    base_details = {
+        "Momentum 6M": f"**Momentum 6 Mois ({score_val:.1f}/10)**\n- Prix actuel : ${info.get('currentPrice', 'N/A')}\n- Plus haut 52s : ${info.get('fiftyTwoWeekHigh', 'N/A')}",
+        "Momentum 3M": f"**Momentum 3 Mois ({score_val:.1f}/10)**\n- Performance récente.\n- Prix actuel : ${info.get('currentPrice', 'N/A')}",
+        "RSI": f"**RSI (14 jours) ({score_val:.1f}/10)**\n- < 30 : Survente (Potentiel achat)\n- > 70 : Surachat (Potentiel vente)",
+        "Volume": f"**Volume ({score_val:.1f}/10)**\n- Volume moyen : {fmt_num(info.get('averageVolume'))}",
+        "P/E Ratio": f"**Price to Earnings (PER) ({score_val:.1f}/10)**\n- Ratio actuel : {fmt_num(info.get('trailingPE') or info.get('forwardPE'))}\n- < 15 : Souvent sous-évalué",
+        "PEG Ratio": f"**PEG Ratio ({score_val:.1f}/10)**\n- Ratio actuel : {fmt_num(info.get('pegRatio'))}\n- < 1 : Sous-évalué par rapport à la croissance",
+        "Croissance CA": f"**Croissance Chiffre d'Affaires ({score_val:.1f}/10)**\n- Taux : {fmt_pct(info.get('revenueGrowth'))}",
+        "Marges": f"**Marge Nette ({score_val:.1f}/10)**\n- Taux : {fmt_pct(info.get('profitMargins'))}",
+        "Marge Opé": f"**Marge Opérationnelle ({score_val:.1f}/10)**\n- Taux : {fmt_pct(info.get('operatingMargins'))}",
+        "ROE": f"**Return on Equity (ROE) ({score_val:.1f}/10)**\n- Taux : {fmt_pct(info.get('returnOnEquity'))}",
+        "ROA": f"**Return on Assets (ROA) ({score_val:.1f}/10)**\n- Taux : {fmt_pct(info.get('returnOnAssets'))}",
+        "Dette/Capitaux": f"**Dette / Capitaux Propres ({score_val:.1f}/10)**\n- Ratio : {fmt_num(info.get('debtToEquity'))}",
+        "Free Cash Flow": f"**Free Cash Flow ({score_val:.1f}/10)**\n- Montant : ${fmt_num(info.get('freeCashflow'))}",
+        "Beta": f"**Beta (Volatilité) ({score_val:.1f}/10)**\n- Beta : {fmt_num(info.get('beta'))}",
+        "Liquidité": f"**Current Ratio ({score_val:.1f}/10)**\n- Ratio : {fmt_num(info.get('currentRatio'))}",
+        "Dividende": f"**Rendement du Dividende ({score_val:.1f}/10)**\n- Yield : {fmt_pct(info.get('dividendYield'))}",
+        "Price to Book": f"**Price to Book (P/B) ({score_val:.1f}/10)**\n- Ratio : {fmt_num(info.get('priceToBook'))}"
     }
-    return details.get(indicator_name, "Détails non disponibles.")
+    
+    return base_details.get(indicator_name, "Détails non disponibles.")
 
 # --- PAGE D'ANALYSE ---
 def show_analysis_page(company_ticker, horizon_code):
@@ -206,7 +210,7 @@ def show_analysis_page(company_ticker, horizon_code):
                 color = "#00CC00" if val >= 7 else "#FFD700" if val >= 4 else "#FF4B4B"
                 with st.expander(f"{e} **{name}**: {val:.1f}/10"):
                     st.markdown(f"""<div style="background:#e0e0e0;border-radius:10px;height:20px;"><div style="background:{color};width:{val*10}%;height:100%;border-radius:10px;"></div></div>""", unsafe_allow_html=True)
-                    st.markdown(get_calculation_details(final, name))
+                    st.markdown(get_calculation_details(final, name, val)) # Pass the score_val here
             
             st.markdown("---")
 
@@ -297,7 +301,6 @@ def display_row(rank, ticker, name, price, mcap, p1d, p7d, p30d, p1y, is_header=
     else:
         cols[0].markdown(f"<span class='row-text'>**{rank}**</span>", unsafe_allow_html=True)
         
-        # CLÉ UNIQUE GRACE AU SUFFIXE
         if cols[1].button(ticker, key=f"btn_{ticker}_{rank}_{list_suffix}"):
             st.session_state.selected_stock = ticker
             st.session_state.origin = 'ranking'
@@ -343,13 +346,16 @@ else:
     with tab_analyse:
         st.header("🔍 Démarrez l'Analyse")
         
-        with st.form(key='search_form'):
-            col_input, col_radio, col_btn = st.columns([2, 2, 1])
+        with st.form(key='search_form', clear_on_submit=False): # Garder le texte après soumission
+            col_input, col_radio_spacer, col_radio, col_btn = st.columns([3, 0.5, 2, 1.5]) # Ajustement des colonnes
             with col_input:
                 ticker_input = st.text_input("Entrez le Ticker", placeholder="ex: AAPL...", label_visibility="collapsed")
-            with col_radio:
+            with col_radio: # Le radio doit être dans une colonne séparée
                 horizon = st.radio("Horizon", ["Court terme", "Long terme"], index=1, horizontal=True, label_visibility="collapsed")
             with col_btn:
+                # Ajout d'un espace avant le bouton pour l'alignement
+                st.write("") # Espace vide
+                st.write("") # Espace vide
                 submit_search = st.form_submit_button("🚀 ANALYSER", type="primary", use_container_width=True)
             
             if submit_search and ticker_input:
@@ -385,7 +391,6 @@ else:
         c2.metric("🌍 Couverture", "Global")
         c3.metric("⚡ Vitesse", "< 5 sec")
 
-    # APPEL DES CLASSEMENTS AVEC IDENTIFIANT UNIQUE
     with tab_top100: render_ranking('market_cap', False, "top100")
     with tab_perf_pos: render_ranking('perf_1y', False, "gainers")
     with tab_perf_neg: render_ranking('perf_1y', True, "losers")
@@ -398,10 +403,8 @@ st.markdown("""
     .block-container { padding-top: 2rem; padding-bottom: 2rem; }
     .row-text { font-size: 15px; line-height: 1.6; vertical-align: middle; margin: 0; padding: 0; }
     
-    /* PADDING COLONNES LÉGÈREMENT AUGMENTÉ POUR AÉRER */
     div[data-testid="column"] { padding: 0px 5px !important; margin: 0px !important;}
     
-    /* MARGE LIGNES AUGMENTÉE */
     .row-divider { margin-top: 8px !important; margin-bottom: 8px !important; border-top: 1px solid #f0f0f0; }
     
     div[data-testid="stColumn"] button { 
@@ -416,5 +419,10 @@ st.markdown("""
     h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; }
     h4 { margin-top: 1.2rem; margin-bottom: 0.4rem; }
     label[for^="st-radio"] div[data-testid="stWidgetLabel"] { display: none; }
+
+    /* Ajustement pour aligner le bouton ANALYSER */
+    div[data-testid="stVerticalBlock"] > div:nth-child(2) > div:nth-child(1) {
+        align-items: flex-end; /* Aligne les éléments enfants à la fin */
+    }
 </style>
 """, unsafe_allow_html=True)
