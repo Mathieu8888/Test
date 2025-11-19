@@ -238,7 +238,7 @@ with tab_analyse:
                     
                     st.markdown("---")
 
-                    # --- NOUVEL EMPLACEMENT DES INFOS COMPLÉMENTAIRES ---
+                    # --- INFOS COMPLÉMENTAIRES ---
                     st.markdown("### 📊 Informations Complémentaires")
                     col1_info, col2_info = st.columns(2)
                     with col1_info:
@@ -248,15 +248,12 @@ with tab_analyse:
                         st.write(f"- **Plus haut 52 sem** : ${info.get('fiftyTwoWeekHigh', 'N/A')}")
                         st.write(f"- **Plus bas 52 sem** : ${info.get('fiftyTwoWeekLow', 'N/A')}")
                         
-                        # Calcul et affichage de la position dans la fourchette 52 semaines
                         high_52 = info.get('fiftyTwoWeekHigh')
                         low_52 = info.get('fiftyTwoWeekLow')
                         current_price = info.get('currentPrice')
                         if all([high_52, low_52, current_price]) and (high_52 - low_52) > 0:
                             position = ((current_price - low_52) / (high_52 - low_52)) * 100
                             st.write(f"- **Position fourchette 52 sem** : {position:.1f}%")
-                        else:
-                            st.write(f"- **Position fourchette 52 sem** : N/A")
                     with col2_info:
                         st.markdown("**💼 Ratios Financiers**")
                         pe_ratio = info.get('trailingPE') or info.get('forwardPE')
@@ -270,8 +267,8 @@ with tab_analyse:
                     
                     st.markdown("---")
                     
-                    # --- GRAPHIQUE PRIX (MODIFIÉ) ---
-                    col_title, col_btns_spacer, col_btns = st.columns([1.5, 3.5, 3]) # Ajustement des ratios
+                    # --- GRAPHIQUE PRIX (CORRIGÉ : ZOOM + SANS BARRE + BOUTONS) ---
+                    col_title, col_btns_spacer, col_btns = st.columns([1.5, 3.5, 3])
                     with col_title:
                         st.markdown("### 📈 Évolution Prix")
                     
@@ -279,7 +276,7 @@ with tab_analyse:
                     if 'sel_per' not in st.session_state: st.session_state.sel_per = "1A"
                     
                     with col_btns:
-                        cols_btns_inner = st.columns(len(per_opts)) # Utilisation de 7 colonnes pour les 7 boutons
+                        cols_btns_inner = st.columns(len(per_opts))
                         for i, (l, c) in enumerate(per_opts):
                             with cols_btns_inner[i]:
                                 if st.button(l, key=f"p_{l}", type="primary" if st.session_state.sel_per==l else "secondary", use_container_width=True):
@@ -290,6 +287,13 @@ with tab_analyse:
                     hist = final.stock.history(period=sel_code)
                     
                     if not hist.empty:
+                        # Calcul pour l'échelle dynamique
+                        y_min = hist['Close'].min()
+                        y_max = hist['Close'].max()
+                        # Ajouter une petite marge de 5%
+                        margin = (y_max - y_min) * 0.05
+                        y_range = [y_min - margin, y_max + margin]
+
                         perf = ((hist['Close'][-1] - hist['Close'][0])/hist['Close'][0])*100
                         
                         if perf > 0:
@@ -308,8 +312,17 @@ with tab_analyse:
                             fill='tozeroy', 
                             fillcolor=fill_col
                         ))
-                        fig.update_layout(height=400, margin=dict(l=0,r=0,t=10,b=0), showlegend=False)
-                        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}) # <<< CORRECTION ICI
+                        
+                        # MISE A JOUR LAYOUT: Range Dynamique + Pas de légende
+                        fig.update_layout(
+                            height=400, 
+                            margin=dict(l=0,r=0,t=10,b=0), 
+                            showlegend=False,
+                            yaxis=dict(range=y_range) # Appliquer le zoom
+                        )
+                        
+                        # Config: Masquer la barre d'outils (zoom, pan, etc)
+                        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
             except Exception as e:
                 st.error(f"Erreur: {e}")
@@ -367,37 +380,28 @@ with tab_perf_pos: render_ranking('perf_1y', False)
 with tab_perf_neg: render_ranking('perf_1y', True)
 
 # ---------------------------------------------------------
-# CSS (MIS À JOUR)
+# CSS (STYLE BOUTONS ARRONDIS)
 # ---------------------------------------------------------
 st.markdown("""
 <style>
     .block-container { padding-top: 2rem; padding-bottom: 2rem; }
     .row-text { font-size: 15px; line-height: 1.6; vertical-align: middle; }
-    div[data-testid="column"] { padding-top: 5px !important; padding-bottom: 5px !important; } /* Légèrement réduit */
+    div[data-testid="column"] { padding-top: 5px !important; padding-bottom: 5px !important; }
     .row-divider { margin-top: 5px !important; margin-bottom: 5px !important; border-top: 1px solid #f0f0f0; }
     
-    /* CSS Ajusté pour des boutons encore plus petits */
-    div[data-testid="stColumn"] button { /* Cible spécifiquement les boutons dans les colonnes */
-        padding: 1px 3px !important; /* Réduit le padding interne */
-        font-size: 0.7em !important;  /* Réduit la taille de la police */
-        min-height: 0.5em !important; /* Réduit la hauteur minimale */
-        line-height: 1.2 !important;  /* Ajuste l'interligne */
+    /* CSS Boutons Jolis (Arrondis) */
+    div[data-testid="stColumn"] button { 
+        padding: 1px 8px !important; /* un peu plus large pour la forme */
+        font-size: 0.75em !important; 
+        min-height: 1.5em !important;
+        line-height: 1.2 !important;
+        border-radius: 15px !important; /* BOUTONS ARRONDIS */
+        border: 1px solid rgba(128, 128, 128, 0.2) !important;
     }
 
-    /* Ajuster la marge des titres h3 et h4 pour qu'ils soient moins collés au-dessus */
-    h3 {
-        margin-top: 1.5rem; /* Ajoute un peu de marge au-dessus des titres h3 */
-        margin-bottom: 0.5rem; /* Réduit un peu la marge en dessous */
-    }
-    h4 {
-        margin-top: 1.2rem; /* Ajoute un peu de marge au-dessus des titres h4 */
-        margin-bottom: 0.4rem; /* Réduit un peu la marge en dessous */
-    }
-
-    /* Masquer le texte du label du radio button pour "Horizon d'investissement" */
-    label[for^="st-radio"] div[data-testid="stWidgetLabel"] {
-        display: none;
-    }
+    h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; }
+    h4 { margin-top: 1.2rem; margin-bottom: 0.4rem; }
+    label[for^="st-radio"] div[data-testid="stWidgetLabel"] { display: none; }
 
 </style>
 """, unsafe_allow_html=True)
